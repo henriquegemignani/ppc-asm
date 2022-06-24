@@ -7,6 +7,14 @@ from typing import Tuple, Optional, BinaryIO, Iterable, List, Dict, Union
 
 from ppc_asm import assembler
 
+__all__ = [
+    "Section",
+    "DolHeader",
+    "Symbol",
+    "DolEditor",
+    "DolFile"
+]
+
 _NUM_TEXT_SECTIONS = 7
 _NUM_DATA_SECTIONS = 11
 _NUM_SECTIONS = _NUM_TEXT_SECTIONS + _NUM_DATA_SECTIONS

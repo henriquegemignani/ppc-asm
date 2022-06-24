@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import dataclasses as _dataclasses
 import struct as _struct
-from typing import Optional, Callable, Tuple, Dict, Union
+import typing as _typing
 
 
 def _pack(*args):
     return _struct.pack(*args)
 
 
-JumpTarget = Union[str, int]
+JumpTarget = _typing.Union[str, int]
 
 
 @_dataclasses.dataclass(frozen=True)
@@ -28,8 +28,8 @@ class FloatRegister(Register):
 
 
 class BaseInstruction:
-    label: Optional[str]
-    name: Optional[str] = None
+    label: _typing.Optional[str]
+    name: _typing.Optional[str] = None
 
     def __init__(self):
         self.label = None
@@ -42,7 +42,7 @@ class BaseInstruction:
         self.name = name
         return self
 
-    def bytes_for(self, address: int, symbols: Dict[str, int]):
+    def bytes_for(self, address: int, symbols: _typing.Dict[str, int]):
         raise NotImplementedError()
 
     def __eq__(self, other):
@@ -60,7 +60,7 @@ class Instruction(BaseInstruction):
         super().__init__()
         self.value = value
 
-    def bytes_for(self, address: int, symbols: Dict[str, int]):
+    def bytes_for(self, address: int, symbols: _typing.Dict[str, int]):
         return iter(_pack(">I", self.value))
 
     def __eq__(self, other):
@@ -76,7 +76,7 @@ class Instruction(BaseInstruction):
         return 4
 
     @classmethod
-    def compose(cls, data: Tuple[Tuple[int, int, bool], ...]):
+    def compose(cls, data: _typing.Tuple[_typing.Tuple[int, int, bool], ...]):
         value = 0
         bits_left = 32
         for item, bit_size, signed in data:
@@ -94,11 +94,11 @@ class Instruction(BaseInstruction):
 
 
 class AddressDependantInstruction(BaseInstruction):
-    def __init__(self, factory: Callable[[int], Tuple[Tuple[int, int, bool], ...]]):
+    def __init__(self, factory: _typing.Callable[[int], _typing.Tuple[_typing.Tuple[int, int, bool], ...]]):
         super().__init__()
         self.factory = factory
 
-    def bytes_for(self, address: int, symbols: Dict[str, int]):
+    def bytes_for(self, address: int, symbols: _typing.Dict[str, int]):
         yield from Instruction.compose(self.factory(address)).bytes_for(address, symbols=symbols)
 
     def __eq__(self, other):
@@ -112,19 +112,19 @@ class AddressDependantInstruction(BaseInstruction):
 class RelativeAddressInstruction(BaseInstruction):
     def __init__(self,
                  address_or_symbol: JumpTarget,
-                 factory: Callable[[int, int], Tuple[Tuple[int, int, bool], ...]]):
+                 factory: _typing.Callable[[int, int], _typing.Tuple[_typing.Tuple[int, int, bool], ...]]):
         super().__init__()
         self.address_or_symbol = address_or_symbol
         self.factory = factory
 
-    def concrete_instruction(self, instruction_address: int, symbols: Dict[str, int]) -> Instruction:
+    def concrete_instruction(self, instruction_address: int, symbols: _typing.Dict[str, int]) -> Instruction:
         if isinstance(self.address_or_symbol, str):
             address = symbols[self.address_or_symbol]
         else:
             address = self.address_or_symbol
         return Instruction.compose(self.factory(address, instruction_address))
 
-    def bytes_for(self, instruction_address: int, symbols: Dict[str, int]):
+    def bytes_for(self, instruction_address: int, symbols: _typing.Dict[str, int]):
         instruction = self.concrete_instruction(instruction_address, symbols=symbols)
         yield from instruction.bytes_for(instruction_address, symbols=symbols)
 

@@ -1,13 +1,20 @@
 import copy
-from typing import Iterable, List, Dict
+import typing
 
 from ppc_asm.assembler.ppc import Instruction, BaseInstruction
 
+__all__ = [
+    "Instruction",
+    "BaseInstruction",
+    "assemble_instructions",
+    "byte_count",
+]
+
 
 def assemble_instructions(address: int,
-                          instructions: List[BaseInstruction],
-                          symbols: Dict[str, int] = None,
-                          ) -> Iterable[int]:
+                          instructions: typing.List[BaseInstruction],
+                          symbols: typing.Dict[str, int] = None,
+                          ) -> typing.Iterable[int]:
     if symbols is not None:
         symbols = copy.copy(symbols)
     else:
@@ -25,5 +32,5 @@ def assemble_instructions(address: int,
         address += len(data)
 
 
-def byte_count(instructions: Iterable[BaseInstruction]) -> int:
+def byte_count(instructions: typing.Iterable[BaseInstruction]) -> int:
     return sum(instruction.byte_count for instruction in instructions)
