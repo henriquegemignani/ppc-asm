@@ -1,7 +1,7 @@
 import copy
 import typing
 
-from ppc_asm.assembler.ppc import Instruction, BaseInstruction
+from ppc_asm.assembler.ppc import BaseInstruction, Instruction
 
 __all__ = [
     "Instruction",

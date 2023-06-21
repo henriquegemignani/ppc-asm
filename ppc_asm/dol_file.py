@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import struct
 from pathlib import Path
-from typing import Tuple, Optional, BinaryIO, Iterable, List, Dict, Union
+from typing import BinaryIO, Iterable, Tuple, Union
 
 from ppc_asm import assembler
 
@@ -29,7 +29,7 @@ class Section:
 
 @dataclasses.dataclass(frozen=True)
 class DolHeader:
-    sections: Tuple[Section, ...]
+    sections: tuple[Section, ...]
     bss_address: int
     bss_size: int
     entry_point: int
@@ -56,13 +56,13 @@ class DolHeader:
 
         return struct.pack(f">{_NUM_SECTIONS}L{_NUM_SECTIONS}L{_NUM_SECTIONS}LLLL", *args) + (b"\x00" * 0x1C)
 
-    def section_for_address(self, address: int) -> Optional[Section]:
+    def section_for_address(self, address: int) -> Section | None:
         for section in self.sections:
             relative_to_base = address - section.base_address
             if 0 <= relative_to_base < section.size:
                 return section
 
-    def offset_for_address(self, address: int) -> Optional[int]:
+    def offset_for_address(self, address: int) -> int | None:
         section = self.section_for_address(address)
         if section is not None:
             return section.offset + (address - section.base_address)
@@ -74,7 +74,7 @@ Symbol = Union[int, str, Tuple[str, int]]
 
 class DolEditor:
     header: DolHeader
-    symbols: Dict[str, int]
+    symbols: dict[str, int]
 
     def __init__(self, header: DolHeader):
         self.header = header
@@ -110,14 +110,14 @@ class DolEditor:
         self._seek_and_write(offset, bytes(code_points))
 
     def write_instructions(self, address_or_symbol: Symbol,
-                           instructions: List[assembler.BaseInstruction]):
+                           instructions: list[assembler.BaseInstruction]):
         address = self.resolve_symbol(address_or_symbol)
         self.write(address, assembler.assemble_instructions(address, instructions, symbols=self.symbols))
 
 
 class DolFile(DolEditor):
-    symbols: Dict[str, int]
-    dol_file: Optional[BinaryIO] = None
+    symbols: dict[str, int]
+    dol_file: BinaryIO | None = None
     editable: bool = False
 
     def __init__(self, dol_path: Path):
