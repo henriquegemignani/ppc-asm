@@ -132,4 +132,4 @@ dmypy.json
 /.idea
 
 # Project files
-/ppc_asm/version.py
+/src/ppc_asm/version.py
