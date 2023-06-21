@@ -3,11 +3,14 @@ name: Python package
 
 on:
   push:
-    branches: [ main ]
+    branches:
+     - main
     tags:
       - '*'
+
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
@@ -42,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11.0-beta - 3.11.0" ]
+        python-version: [ "3.8", "3.9", "3.10", "3.11" ]
 
     steps:
       - name: Checkout
@@ -60,14 +63,9 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
-          
-      - name: Glob match
-        id: glob
-        run: echo ::set-output name=wheel::$(ls dist/*.whl)
-        shell: bash
 
       - name: Install built wheel
-        run: python -m pip install "${{ steps.glob.outputs.wheel }}[test]" -c requirements.txt
+        run: python -m pip install "$(ls dist/*.whl)[test]"
 
       - name: run pytest
         run: python -m pytest --cov
@@ -76,6 +74,26 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
+
+  ruff:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install Python packages
+        run: python -m pip install ruff==0.0.272
+
+      - name: Run ruff
+        run: ruff check --format=github .
 
   pypi:
     runs-on: 'ubuntu-latest'
@@ -91,13 +109,13 @@ jobs:
 
       - name: Publish 📦 to TestPyPI
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.testpypi_password }}
           repository_url: https://test.pypi.org/legacy/
       
       - name: Publish 📦 to PyPI
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.pypi_password }}

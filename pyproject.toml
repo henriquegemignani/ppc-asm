@@ -11,4 +11,17 @@ minversion = "6.0"
 testpaths = [
     "tests",
 ]
-asyncio_mode = "auto"
+# asyncio_mode = "auto"
+xfail_strict = true
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+]
+
+
+[tool.ruff]
+line-length = 120
+select = ["E", "F", "W", "C90", "I", "UP"]
+
+# Version to target for generated code.
+target-version = "py38"
