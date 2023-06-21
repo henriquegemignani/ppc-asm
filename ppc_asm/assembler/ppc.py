@@ -28,8 +28,8 @@ class FloatRegister(Register):
 
 
 class BaseInstruction:
-    label: _typing.Optional[str]
-    name: _typing.Optional[str] = None
+    label: str | None
+    name: str | None = None
 
     def __init__(self):
         self.label = None
@@ -42,7 +42,7 @@ class BaseInstruction:
         self.name = name
         return self
 
-    def bytes_for(self, address: int, symbols: _typing.Dict[str, int]):
+    def bytes_for(self, address: int, symbols: dict[str, int]):
         raise NotImplementedError()
 
     def __eq__(self, other):
@@ -60,7 +60,7 @@ class Instruction(BaseInstruction):
         super().__init__()
         self.value = value
 
-    def bytes_for(self, address: int, symbols: _typing.Dict[str, int]):
+    def bytes_for(self, address: int, symbols: dict[str, int]):
         return iter(_pack(">I", self.value))
 
     def __eq__(self, other):
@@ -76,7 +76,7 @@ class Instruction(BaseInstruction):
         return 4
 
     @classmethod
-    def compose(cls, data: _typing.Tuple[_typing.Tuple[int, int, bool], ...]):
+    def compose(cls, data: tuple[tuple[int, int, bool], ...]):
         value = 0
         bits_left = 32
         for item, bit_size, signed in data:
@@ -94,11 +94,11 @@ class Instruction(BaseInstruction):
 
 
 class AddressDependantInstruction(BaseInstruction):
-    def __init__(self, factory: _typing.Callable[[int], _typing.Tuple[_typing.Tuple[int, int, bool], ...]]):
+    def __init__(self, factory: _typing.Callable[[int], tuple[tuple[int, int, bool], ...]]):
         super().__init__()
         self.factory = factory
 
-    def bytes_for(self, address: int, symbols: _typing.Dict[str, int]):
+    def bytes_for(self, address: int, symbols: dict[str, int]):
         yield from Instruction.compose(self.factory(address)).bytes_for(address, symbols=symbols)
 
     def __eq__(self, other):
@@ -112,19 +112,19 @@ class AddressDependantInstruction(BaseInstruction):
 class RelativeAddressInstruction(BaseInstruction):
     def __init__(self,
                  address_or_symbol: JumpTarget,
-                 factory: _typing.Callable[[int, int], _typing.Tuple[_typing.Tuple[int, int, bool], ...]]):
+                 factory: _typing.Callable[[int, int], tuple[tuple[int, int, bool], ...]]):
         super().__init__()
         self.address_or_symbol = address_or_symbol
         self.factory = factory
 
-    def concrete_instruction(self, instruction_address: int, symbols: _typing.Dict[str, int]) -> Instruction:
+    def concrete_instruction(self, instruction_address: int, symbols: dict[str, int]) -> Instruction:
         if isinstance(self.address_or_symbol, str):
             address = symbols[self.address_or_symbol]
         else:
             address = self.address_or_symbol
         return Instruction.compose(self.factory(address, instruction_address))
 
-    def bytes_for(self, instruction_address: int, symbols: _typing.Dict[str, int]):
+    def bytes_for(self, instruction_address: int, symbols: dict[str, int]):
         instruction = self.concrete_instruction(instruction_address, symbols=symbols)
         yield from instruction.bytes_for(instruction_address, symbols=symbols)
 
@@ -304,11 +304,11 @@ def cmpwi(input_register: GeneralRegister, literal: int):
                                 (literal, 16, True)))
 
 
-def cmp(bf, l, ra: GeneralRegister, rb: GeneralRegister):
+def cmp(bf, l_, ra: GeneralRegister, rb: GeneralRegister):
     """
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_cmp_instr.html
     :param bf: Specifies Condition Register Field 0-7 which indicates result of compare.
-    :param l: Must be set to 0 for the 32-bit subset architecture.
+    :param l_: Must be set to 0 for the 32-bit subset architecture.
     :param ra: Specifies source general-purpose register for operation.
     :param rb: Specifies source general-purpose register for operation.
     :return:
@@ -316,7 +316,7 @@ def cmp(bf, l, ra: GeneralRegister, rb: GeneralRegister):
     return Instruction.compose(((31, 6, False),
                                 (bf, 3, False),
                                 (0, 1, False),
-                                (l, 1, False),
+                                (l_, 1, False),
                                 (ra.number, 5, False),
                                 (rb.number, 5, False),
                                 (0, 10, False),
