@@ -1,5 +1,4 @@
 import pytest
-
 from ppc_asm import assembler
 from ppc_asm.assembler import custom_ppc, ppc
 
