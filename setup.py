@@ -16,6 +16,6 @@ setup(
     use_scm_version={
         "version_scheme": version_scheme,
         "local_scheme": "no-local-version",
-        "write_to": "ppc_asm/version.py",
+        "write_to": "src/ppc_asm/version.py",
     },
 )
