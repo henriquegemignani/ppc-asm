@@ -18,6 +18,10 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+write_to = "src/ppc_asm/version.py"
+git_describe_command = "git describe --dirty --tags --long --match v[0-9]*"
 
 [tool.ruff]
 line-length = 120
