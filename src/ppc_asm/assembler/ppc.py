@@ -304,11 +304,11 @@ def cmpwi(input_register: GeneralRegister, literal: int):
                                 (literal, 16, True)))
 
 
-def cmp(bf, l_, ra: GeneralRegister, rb: GeneralRegister):
+def cmp(bf, unused, ra: GeneralRegister, rb: GeneralRegister):
     """
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_cmp_instr.html
     :param bf: Specifies Condition Register Field 0-7 which indicates result of compare.
-    :param l_: Must be set to 0 for the 32-bit subset architecture.
+    :param unused: Must be set to 0 for the 32-bit subset architecture.
     :param ra: Specifies source general-purpose register for operation.
     :param rb: Specifies source general-purpose register for operation.
     :return:
@@ -316,7 +316,7 @@ def cmp(bf, l_, ra: GeneralRegister, rb: GeneralRegister):
     return Instruction.compose(((31, 6, False),
                                 (bf, 3, False),
                                 (0, 1, False),
-                                (l_, 1, False),
+                                (unused, 1, False),
                                 (ra.number, 5, False),
                                 (rb.number, 5, False),
                                 (0, 10, False),
@@ -398,12 +398,30 @@ def beq(address_or_symbol: JumpTarget, relative: bool = False):
     return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
 
 
+def bgt(address_or_symbol: JumpTarget, relative: bool = False):
+    """
+    jumps to the given address, if last comparison was a successful equality
+    """
+    bo = 12  # Branch if condition false (BO=4)
+    bi = 1  # condition: less than
+    return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
+
+
 def bge(address_or_symbol: JumpTarget, relative: bool = False):
     """
     jumps to the given address, if last comparison was a successful equality
     """
     bo = 4  # Branch if condition false (BO=4)
     bi = 0  # condition: less than
+    return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
+
+
+def ble(address_or_symbol: JumpTarget, relative: bool = False):
+    """
+    jumps to the given address, if last comparison was a successful equality
+    """
+    bo = 4  # Branch if condition false (BO=4)
+    bi = 1  # condition: less than
     return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
 
 
@@ -555,3 +573,10 @@ def mfspr(output_register: GeneralRegister, special_register):
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_mfspr_spr_instrs.html
     """
     return _special_register_op(output_register, special_register, 339, 31)
+
+
+def mulli(output_register: GeneralRegister, input_register: GeneralRegister, literal: int):
+    return Instruction.compose(((7, 6, False),
+                                (output_register.number, 5, False),
+                                (input_register.number, 5, False),
+                                (literal, 16, True)))
