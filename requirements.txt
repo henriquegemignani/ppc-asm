@@ -32,7 +32,7 @@ pluggy==1.2.0
     # via pytest
 pre-commit==3.3.3
     # via ppc-asm (.\setup.py)
-pytest==7.3.2
+pytest==7.4.0
     # via
     #   ppc-asm (.\setup.py)
     #   pytest-cov
