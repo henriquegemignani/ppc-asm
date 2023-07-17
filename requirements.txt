@@ -20,7 +20,7 @@ identify==2.5.24
     # via pre-commit
 iniconfig==2.0.0
     # via pytest
-mock==5.0.2
+mock==5.1.0
     # via ppc-asm (.\setup.py)
 nodeenv==1.8.0
     # via pre-commit
