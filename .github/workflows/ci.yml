@@ -72,8 +72,6 @@ jobs:
 
       - name: codecov
         uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: true
 
   ruff:
     runs-on: 'ubuntu-latest'
