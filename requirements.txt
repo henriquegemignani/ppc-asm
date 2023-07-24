@@ -41,7 +41,7 @@ pytest-cov==4.1.0
     # via ppc-asm (.\setup.py)
 pytest-mock==3.11.1
     # via ppc-asm (.\setup.py)
-pyyaml==6.0
+pyyaml==6.0.1
     # via pre-commit
 tomli==2.0.1
     # via
