@@ -43,14 +43,14 @@ class BaseInstruction:
         return self
 
     def bytes_for(self, address: int, symbols: dict[str, int]):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __eq__(self, other):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
     def byte_count(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class Instruction(BaseInstruction):
@@ -80,14 +80,15 @@ class Instruction(BaseInstruction):
         value = 0
         bits_left = 32
         for item, bit_size, signed in data:
+            it = item
             bits_left -= bit_size
             if signed:
-                assert -(1 << (bit_size - 1)) <= item < (1 << (bit_size - 1))
-                if item < 0:
-                    item += (1 << bit_size)
+                assert -(1 << (bit_size - 1)) <= it < (1 << (bit_size - 1))
+                if it < 0:
+                    it += (1 << bit_size)
             else:
-                assert 0 <= item < (1 << bit_size)
-            value += item << bits_left
+                assert 0 <= it < (1 << bit_size)
+            value += it << bits_left
 
         assert bits_left == 0
         return cls(value)
