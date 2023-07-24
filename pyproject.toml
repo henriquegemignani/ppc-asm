@@ -71,6 +71,9 @@ select = [
     "PLR",
     "PLW",
 ]
+extend-ignore = [
+    "PLR0913",
+]
 src = ["src"]
 
 # Version to target for generated code.

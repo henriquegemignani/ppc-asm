@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import dataclasses
 import struct
-from pathlib import Path
-from typing import BinaryIO, Iterable, Tuple, Union
+from typing import TYPE_CHECKING, BinaryIO, Iterable, Tuple, Union
 
 from ppc_asm import assembler
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 __all__ = [
     "Section",
@@ -96,10 +98,10 @@ class DolEditor:
         return offset
 
     def _seek_and_read(self, seek: int, size: int):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _seek_and_write(self, seek: int, data: bytes):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def read(self, address: int, size: int) -> bytes:
         offset = self.offset_for_address(address)
