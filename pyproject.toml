@@ -72,7 +72,7 @@ select = [
     "PLW",
 ]
 extend-ignore = [
-    "PLR0913",
+    "PLR0913",  # Too many arguments for function
 ]
 src = ["src"]
 
