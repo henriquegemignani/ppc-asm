@@ -27,7 +27,7 @@ def test_instruction_with_label():
 
 
 def test_stw():
-    assert _b(ppc.stw(ppc.r31, 0x1c, ppc.r1)) == [0x93, 0xe1, 0x00, 0x1c]
+    assert _b(ppc.stw(ppc.r31, 0x1C, ppc.r1)) == [0x93, 0xE1, 0x00, 0x1C]
 
 
 def test_stfs():
@@ -35,7 +35,12 @@ def test_stfs():
 
 
 def test_lfs():
-    assert _b(ppc.lfs(ppc.f0, (0x8041a4a8 - 0x804223c0), ppc.r2)) == [0xc0, 0x02, 0x80, 0xe8]
+    assert _b(ppc.lfs(ppc.f0, (0x8041A4A8 - 0x804223C0), ppc.r2)) == [
+        0xC0,
+        0x02,
+        0x80,
+        0xE8,
+    ]
 
 
 def test_addi():
@@ -55,11 +60,11 @@ def test_lwz():
 
 
 def test_lwzx():
-    assert _b(ppc.lwzx(ppc.r0, ppc.r4, ppc.r0)) == [0x7c, 0x04, 0x00, 0x2e]
+    assert _b(ppc.lwzx(ppc.r0, ppc.r4, ppc.r0)) == [0x7C, 0x04, 0x00, 0x2E]
 
 
 def test_lhz():
-    assert _b(ppc.lhz(ppc.r6, -0x40da, ppc.r2)) == [0xa0, 0xc2, 0xbf, 0x26]
+    assert _b(ppc.lhz(ppc.r6, -0x40DA, ppc.r2)) == [0xA0, 0xC2, 0xBF, 0x26]
 
 
 def test_lbz():
@@ -67,27 +72,27 @@ def test_lbz():
 
 
 def test_rlwinm():
-    assert _b(ppc.rlwinm(ppc.r0, ppc.r0, 0x2, 0x0, 0x1d)) == [0x54, 0x00, 0x10, 0x3a]
+    assert _b(ppc.rlwinm(ppc.r0, ppc.r0, 0x2, 0x0, 0x1D)) == [0x54, 0x00, 0x10, 0x3A]
 
 
 def test_cmpwi_a():
-    assert _b(ppc.cmpwi(ppc.r30, 0)) == [0x2c, 0x1e, 0x00, 0x00]
+    assert _b(ppc.cmpwi(ppc.r30, 0)) == [0x2C, 0x1E, 0x00, 0x00]
 
 
 def test_cmpwi_b():
-    assert _b(ppc.cmpwi(ppc.r4, -1)) == [0x2c, 0x04, 0xFF, 0xFF]
+    assert _b(ppc.cmpwi(ppc.r4, -1)) == [0x2C, 0x04, 0xFF, 0xFF]
 
 
 def test_cmpw():
-    assert _b(ppc.cmpwi(ppc.r4, -1)) == [0x2c, 0x04, 0xFF, 0xFF]
+    assert _b(ppc.cmpwi(ppc.r4, -1)) == [0x2C, 0x04, 0xFF, 0xFF]
 
 
 def test_b():
-    assert _b(ppc.b(0x80085760), address=0x80085760 + 0x9C) == [0x4b, 0xff, 0xff, 0x64]
+    assert _b(ppc.b(0x80085760), address=0x80085760 + 0x9C) == [0x4B, 0xFF, 0xFF, 0x64]
 
 
 def test_bl():
-    assert _b(ppc.bl(0x80085760), address=0x80085760 + 0x9C) == [0x4b, 0xff, 0xff, 0x65]
+    assert _b(ppc.bl(0x80085760), address=0x80085760 + 0x9C) == [0x4B, 0xFF, 0xFF, 0x65]
 
 
 def test_bdnz():
@@ -100,11 +105,16 @@ def test_beq():
 
 def test_beq_symbol():
     symbols = {"TheFunPlace": 0x80038094}
-    assert _b(ppc.beq("TheFunPlace"), address=0x80038034, symbols=symbols) == [0x41, 0x82, 0x00, 0x60]
+    assert _b(ppc.beq("TheFunPlace"), address=0x80038034, symbols=symbols) == [
+        0x41,
+        0x82,
+        0x00,
+        0x60,
+    ]
 
 
 def test_bge():
-    assert _b(ppc.bge(0x801c93f8), address=0x801c93ec) == [0x40, 0x80, 0x00, 0x0c]
+    assert _b(ppc.bge(0x801C93F8), address=0x801C93EC) == [0x40, 0x80, 0x00, 0x0C]
 
 
 def test_bne():
@@ -112,7 +122,7 @@ def test_bne():
 
 
 def test_blr():
-    assert _b(ppc.blr()) == [0x4e, 0x80, 0x00, 0x20]
+    assert _b(ppc.blr()) == [0x4E, 0x80, 0x00, 0x20]
 
 
 def test_bctrl():
@@ -124,7 +134,7 @@ def test_li():
 
 
 def test_stwu():
-    assert _b(ppc.stwu(ppc.r1, -0x2C, ppc.r1)) == [0x94, 0x21, 0xff, 0xd4]
+    assert _b(ppc.stwu(ppc.r1, -0x2C, ppc.r1)) == [0x94, 0x21, 0xFF, 0xD4]
 
 
 def test_stmw():
@@ -132,23 +142,23 @@ def test_stmw():
 
 
 def test_sync():
-    assert _b(ppc.sync()) == [0x7c, 0x00, 0x04, 0xac]
+    assert _b(ppc.sync()) == [0x7C, 0x00, 0x04, 0xAC]
 
 
 def test_isync():
-    assert _b(ppc.isync()) == [0x4c, 0x00, 0x01, 0x2c]
+    assert _b(ppc.isync()) == [0x4C, 0x00, 0x01, 0x2C]
 
 
 def test_dcbi():
-    assert _b(ppc.dcbi(1, 2)) == [0x7c, 0x01, 0x13, 0xac]
+    assert _b(ppc.dcbi(1, 2)) == [0x7C, 0x01, 0x13, 0xAC]
 
 
 def test_mfspr_LR():
-    assert _b(ppc.mfspr(ppc.r0, ppc.LR)) == [0x7c, 0x08, 0x02, 0xa6]
+    assert _b(ppc.mfspr(ppc.r0, ppc.LR)) == [0x7C, 0x08, 0x02, 0xA6]
 
 
 def test_mtctr():
-    assert _b(ppc.mtctr(ppc.r12)) == [0x7d, 0x89, 0x03, 0xa6]
+    assert _b(ppc.mtctr(ppc.r12)) == [0x7D, 0x89, 0x03, 0xA6]
 
 
 def test_nop():

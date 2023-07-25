@@ -85,7 +85,7 @@ class Instruction(BaseInstruction):
             if signed:
                 assert -(1 << (bit_size - 1)) <= it < (1 << (bit_size - 1))
                 if it < 0:
-                    it += (1 << bit_size)
+                    it += 1 << bit_size
             else:
                 assert 0 <= it < (1 << bit_size)
             value += it << bits_left
@@ -111,9 +111,11 @@ class AddressDependantInstruction(BaseInstruction):
 
 
 class RelativeAddressInstruction(BaseInstruction):
-    def __init__(self,
-                 address_or_symbol: JumpTarget,
-                 factory: _typing.Callable[[int, int], tuple[tuple[int, int, bool], ...]]):
+    def __init__(
+        self,
+        address_or_symbol: JumpTarget,
+        factory: _typing.Callable[[int, int], tuple[tuple[int, int, bool], ...]],
+    ):
         super().__init__()
         self.address_or_symbol = address_or_symbol
         self.factory = factory
@@ -130,8 +132,9 @@ class RelativeAddressInstruction(BaseInstruction):
         yield from instruction.bytes_for(instruction_address, symbols=symbols)
 
     def __eq__(self, other):
-        return isinstance(other, RelativeAddressInstruction) and (self.factory == other.factory and
-                                                                  self.address_or_symbol == other.address_or_symbol)
+        return isinstance(other, RelativeAddressInstruction) and (
+            self.factory == other.factory and self.address_or_symbol == other.address_or_symbol
+        )
 
     def __repr__(self):
         if self.name is None:
@@ -176,94 +179,136 @@ CTR = 9
 
 
 def lmw(start_register: GeneralRegister, offset: int, input_register: GeneralRegister):
-    return Instruction.compose(((46, 6, False),
-                                (start_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (offset, 16, True)))
+    return Instruction.compose(
+        (
+            (46, 6, False),
+            (start_register.number, 5, False),
+            (input_register.number, 5, False),
+            (offset, 16, True),
+        )
+    )
 
 
 def lwz(output_register: GeneralRegister, offset: int, input_register: GeneralRegister):
     """
     *(output_register + offset) = input_register
     """
-    return Instruction.compose(((32, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (offset, 16, True))).with_name(f"lwz {output_register}, 0x{offset:x}({input_register})")
+    return Instruction.compose(
+        (
+            (32, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (offset, 16, True),
+        )
+    ).with_name(f"lwz {output_register}, 0x{offset:x}({input_register})")
 
 
-def lwzx(output_register: GeneralRegister, input_register_a: GeneralRegister, input_register_b: GeneralRegister):
+def lwzx(
+    output_register: GeneralRegister,
+    input_register_a: GeneralRegister,
+    input_register_b: GeneralRegister,
+):
     """
     output_register = *(input_register_a + input_register_b)
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_lwzx_lx_lwzi_instrus.html
     """
-    return Instruction.compose(((31, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register_a.number, 5, False),
-                                (input_register_b.number, 5, False),
-                                (23, 10, False),
-                                (0, 1, False),
-                                ))
+    return Instruction.compose(
+        (
+            (31, 6, False),
+            (output_register.number, 5, False),
+            (input_register_a.number, 5, False),
+            (input_register_b.number, 5, False),
+            (23, 10, False),
+            (0, 1, False),
+        )
+    )
 
 
 def lhz(output_register: GeneralRegister, offset: int, input_register: GeneralRegister):
     """
     *(output_register + offset) = input_register
     """
-    return Instruction.compose(((40, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (offset, 16, True)))
+    return Instruction.compose(
+        (
+            (40, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (offset, 16, True),
+        )
+    )
 
 
 def lbz(output_register: GeneralRegister, offset: int, input_register: GeneralRegister):
     """
     *(output_register + offset) = input_register
     """
-    return Instruction.compose(((34, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (offset, 16, True)))
+    return Instruction.compose(
+        (
+            (34, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (offset, 16, True),
+        )
+    )
 
 
-def rlwinm(output_register: GeneralRegister, input_register: GeneralRegister,
-           shift: int, mask_begin: int, mask_end: int):
+def rlwinm(
+    output_register: GeneralRegister,
+    input_register: GeneralRegister,
+    shift: int,
+    mask_begin: int,
+    mask_end: int,
+):
     """
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_rlwinm_rlinm_rtlwrdimm_instrs.html
     """
-    return Instruction.compose(((21, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (shift, 5, False),
-                                (mask_begin, 5, False),
-                                (mask_end, 5, False),
-                                (0, 1, False),
-                                ))
+    return Instruction.compose(
+        (
+            (21, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (shift, 5, False),
+            (mask_begin, 5, False),
+            (mask_end, 5, False),
+            (0, 1, False),
+        )
+    )
 
 
-def or_(output_register: GeneralRegister, input_register_a: GeneralRegister, input_register_b: GeneralRegister,
-        record_bit: bool = False):
+def or_(
+    output_register: GeneralRegister,
+    input_register_a: GeneralRegister,
+    input_register_b: GeneralRegister,
+    record_bit: bool = False,
+):
     """
     output_register = input_register_a | input_register_b
     """
     # See https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/assembler/idalangref_or_instruction.html
-    return Instruction.compose(((31, 6, False),
-                                (input_register_a.number, 5, False),
-                                (output_register.number, 5, False),
-                                (input_register_b.number, 5, False),
-                                (444, 10, False),
-                                (int(record_bit), 1, False),
-                                ))
+    return Instruction.compose(
+        (
+            (31, 6, False),
+            (input_register_a.number, 5, False),
+            (output_register.number, 5, False),
+            (input_register_b.number, 5, False),
+            (444, 10, False),
+            (int(record_bit), 1, False),
+        )
+    )
 
 
 def ori(output_register: GeneralRegister, input_register: GeneralRegister, constant: int):
     """
     output_register = input_register | constant
     """
-    return Instruction.compose(((24, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (constant, 16, False)))
+    return Instruction.compose(
+        (
+            (24, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (constant, 16, False),
+        )
+    )
 
 
 def nop():
@@ -290,19 +335,27 @@ def lfs(output_register: FloatRegister, offset: int, input_register: GeneralRegi
 
     output_register is a float register.
     """
-    return Instruction.compose(((48, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (offset, 16, True)))
+    return Instruction.compose(
+        (
+            (48, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (offset, 16, True),
+        )
+    )
 
 
 def cmpwi(input_register: GeneralRegister, literal: int):
-    return Instruction.compose(((11, 6, False),
-                                (0, 3, False),
-                                (0, 1, False),
-                                (0, 1, False),
-                                (input_register.number, 5, False),
-                                (literal, 16, True)))
+    return Instruction.compose(
+        (
+            (11, 6, False),
+            (0, 3, False),
+            (0, 1, False),
+            (0, 1, False),
+            (input_register.number, 5, False),
+            (literal, 16, True),
+        )
+    )
 
 
 def cmp(bf, unused, ra: GeneralRegister, rb: GeneralRegister):
@@ -314,15 +367,18 @@ def cmp(bf, unused, ra: GeneralRegister, rb: GeneralRegister):
     :param rb: Specifies source general-purpose register for operation.
     :return:
     """
-    return Instruction.compose(((31, 6, False),
-                                (bf, 3, False),
-                                (0, 1, False),
-                                (unused, 1, False),
-                                (ra.number, 5, False),
-                                (rb.number, 5, False),
-                                (0, 10, False),
-                                (0, 1, False),
-                                ))
+    return Instruction.compose(
+        (
+            (31, 6, False),
+            (bf, 3, False),
+            (0, 1, False),
+            (unused, 1, False),
+            (ra.number, 5, False),
+            (rb.number, 5, False),
+            (0, 10, False),
+            (0, 1, False),
+        )
+    )
 
 
 def cmpw(bf, ra, rb):
@@ -333,10 +389,12 @@ def cmpw(bf, ra, rb):
 def _jump_to_relative_address(address_or_symbol: JumpTarget, *, relative: bool, link: bool):
     def with_inc_address(address: int, instruction_address: int):
         jump_offset = (address - instruction_address) // 4
-        return (((18, 6, False),
-                 (jump_offset, 24, True),
-                 (0, 1, False),
-                 (int(link), 1, False)))
+        return (
+            (18, 6, False),
+            (jump_offset, 24, True),
+            (0, 1, False),
+            (int(link), 1, False),
+        )
 
     instruction = RelativeAddressInstruction(address_or_symbol, with_inc_address)
     if relative:
@@ -363,18 +421,27 @@ def bl(address_or_symbol: JumpTarget, *, relative: bool = False):
     )
 
 
-def _conditional_branch(bo: int, bi: int, address_or_symbol: JumpTarget, *, relative: bool = False,
-                        absolute_address: bool = False, link_bit: bool = False):
+def _conditional_branch(
+    bo: int,
+    bi: int,
+    address_or_symbol: JumpTarget,
+    *,
+    relative: bool = False,
+    absolute_address: bool = False,
+    link_bit: bool = False,
+):
     # https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_ext_br_mnem_bofield.html#idalangref_ext_br_mnem_bofield__row-d2e17648
 
     def with_inc_address(address: int, instruction_address: int):
         jump_offset = (address - instruction_address) // 4
-        return (((16, 6, False),
-                 (bo, 5, False),
-                 (bi, 5, False),
-                 (jump_offset, 14, True),
-                 (int(absolute_address), 1, False),
-                 (int(link_bit), 1, False)))
+        return (
+            (16, 6, False),
+            (bo, 5, False),
+            (bi, 5, False),
+            (jump_offset, 14, True),
+            (int(absolute_address), 1, False),
+            (int(link_bit), 1, False),
+        )
 
     instruction = RelativeAddressInstruction(address_or_symbol, with_inc_address)
     if relative:
@@ -438,13 +505,17 @@ def bne(address_or_symbol: JumpTarget, relative: bool = False):
 def bclr(bo, bi, bh):
     # https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_branch_conditional_link_register.html
     lk = 0
-    return Instruction.compose(((19, 6, False),
-                                (bo, 5, False),
-                                (bi, 5, False),
-                                (0, 3, False),
-                                (bh, 2, False),
-                                (16, 10, False),
-                                (lk, 1, False)))
+    return Instruction.compose(
+        (
+            (19, 6, False),
+            (bo, 5, False),
+            (bi, 5, False),
+            (0, 3, False),
+            (bh, 2, False),
+            (16, 10, False),
+            (lk, 1, False),
+        )
+    )
 
 
 def blr():
@@ -455,13 +526,17 @@ def blr():
 def bcctrl(bo, bi, bh):
     """Branch conditionally. Sets the link register."""
     lk = 1
-    return Instruction.compose(((19, 6, False),
-                                (bo, 5, False),
-                                (bi, 5, False),
-                                (0, 3, False),
-                                (bh, 2, False),
-                                (528, 10, False),
-                                (lk, 1, False)))
+    return Instruction.compose(
+        (
+            (19, 6, False),
+            (bo, 5, False),
+            (bi, 5, False),
+            (0, 3, False),
+            (bh, 2, False),
+            (528, 10, False),
+            (lk, 1, False),
+        )
+    )
 
 
 def bctrl():
@@ -469,11 +544,20 @@ def bctrl():
     return bcctrl(20, 0, 0)
 
 
-def _store(input_register: Register, offset: int, output_register: GeneralRegister, op_code: int):
-    return Instruction.compose(((op_code, 6, False),
-                                (input_register.number, 5, False),
-                                (output_register.number, 5, False),
-                                (offset, 16, True)))
+def _store(
+    input_register: Register,
+    offset: int,
+    output_register: GeneralRegister,
+    op_code: int,
+):
+    return Instruction.compose(
+        (
+            (op_code, 6, False),
+            (input_register.number, 5, False),
+            (output_register.number, 5, False),
+            (offset, 16, True),
+        )
+    )
 
 
 def stb(input_register: GeneralRegister, offset: int, output_register: GeneralRegister):
@@ -506,7 +590,7 @@ def stmw(start_register: GeneralRegister, offset: int, output_register: GeneralR
 
 
 def sync():
-    return Instruction(0x7c0004ac)
+    return Instruction(0x7C0004AC)
 
 
 def icbi(ra: int, rb: int):
@@ -515,12 +599,16 @@ def icbi(ra: int, rb: int):
 
 
 def dcbi(ra: int, rb: int):
-    return Instruction.compose(((31, 6, False),
-                                (0, 5, False),
-                                (ra, 5, False),
-                                (rb, 5, False),
-                                (470, 10, False),
-                                (0, 1, False)))
+    return Instruction.compose(
+        (
+            (31, 6, False),
+            (0, 5, False),
+            (ra, 5, False),
+            (rb, 5, False),
+            (470, 10, False),
+            (0, 1, False),
+        )
+    )
 
 
 def isync():
@@ -531,33 +619,44 @@ def addi(output_register: GeneralRegister, input_register: GeneralRegister, lite
     """
     output_register = input_register + literal
     """
-    return Instruction.compose(((14, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (literal, 16, True)))
+    return Instruction.compose(
+        (
+            (14, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (literal, 16, True),
+        )
+    )
 
 
 def addis(output_register: GeneralRegister, input_register: GeneralRegister, literal: int):
     """
     output_register = (input_register + literal) << 16
     """
-    return Instruction.compose(((15, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (literal, 16, False)))
+    return Instruction.compose(
+        (
+            (15, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (literal, 16, False),
+        )
+    )
 
 
 def _special_register_op(input_register: Register, special_register: int, magic_value: int, op_code: int):
     special_register_top = special_register >> 5
     special_register_bot = special_register & 0b11111
 
-    return Instruction.compose(((op_code, 6, False),
-                                (input_register.number, 5, False),
-                                (special_register_bot, 5, False),
-                                (special_register_top, 5, False),
-                                (magic_value, 10, False),
-                                (0, 1, False),
-                                ))
+    return Instruction.compose(
+        (
+            (op_code, 6, False),
+            (input_register.number, 5, False),
+            (special_register_bot, 5, False),
+            (special_register_top, 5, False),
+            (magic_value, 10, False),
+            (0, 1, False),
+        )
+    )
 
 
 def mtspr(special_register, input_register: GeneralRegister):
@@ -577,7 +676,11 @@ def mfspr(output_register: GeneralRegister, special_register):
 
 
 def mulli(output_register: GeneralRegister, input_register: GeneralRegister, literal: int):
-    return Instruction.compose(((7, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register.number, 5, False),
-                                (literal, 16, True)))
+    return Instruction.compose(
+        (
+            (7, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (literal, 16, True),
+        )
+    )

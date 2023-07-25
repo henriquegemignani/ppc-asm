@@ -31,8 +31,10 @@ class CurrentAddressInstruction(ppc.BaseInstruction):
         return load_unsigned_32bit(self.output_register, address + self.offset).bytes_for(address, symbols=symbols)
 
     def __eq__(self, other):
-        return (isinstance(other, CurrentAddressInstruction) and
-                (other.output_register, other.offset) == (self.output_register, self.offset))
+        return isinstance(other, CurrentAddressInstruction) and (
+            other.output_register,
+            other.offset,
+        ) == (self.output_register, self.offset)
 
     @property
     def byte_count(self):
@@ -40,10 +42,12 @@ class CurrentAddressInstruction(ppc.BaseInstruction):
 
 
 def load_unsigned_32bit(output_register: ppc.GeneralRegister, value: int) -> CompositeInstruction:
-    return CompositeInstruction((
-        ppc.lis(output_register, value >> 16),
-        ppc.ori(output_register, output_register, value & 0xFFFF),
-    ))
+    return CompositeInstruction(
+        (
+            ppc.lis(output_register, value >> 16),
+            ppc.ori(output_register, output_register, value & 0xFFFF),
+        )
+    )
 
 
 def load_current_address(output_register: ppc.GeneralRegister, instruction_offset: int = 0):

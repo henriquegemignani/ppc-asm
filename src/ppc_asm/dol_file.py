@@ -9,13 +9,7 @@ from ppc_asm import assembler
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = [
-    "Section",
-    "DolHeader",
-    "Symbol",
-    "DolEditor",
-    "DolFile"
-]
+__all__ = ["Section", "DolHeader", "Symbol", "DolEditor", "DolFile"]
 
 _NUM_TEXT_SECTIONS = 7
 _NUM_DATA_SECTIONS = 11
@@ -44,8 +38,10 @@ class DolHeader:
         size_for_section = struct.unpack_from(struct_format, data, 0x90)
 
         bss_address, bss_size, entry_point = struct.unpack_from(">LLL", data, 0xD8)
-        sections = tuple(Section(offset_for_section[i], base_address_for_section[i], size_for_section[i])
-                         for i in range(_NUM_SECTIONS))
+        sections = tuple(
+            Section(offset_for_section[i], base_address_for_section[i], size_for_section[i])
+            for i in range(_NUM_SECTIONS)
+        )
 
         return cls(sections, bss_address, bss_size, entry_point)
 
@@ -111,10 +107,12 @@ class DolEditor:
         offset = self.offset_for_address(self.resolve_symbol(address_or_symbol))
         self._seek_and_write(offset, bytes(code_points))
 
-    def write_instructions(self, address_or_symbol: Symbol,
-                           instructions: list[assembler.BaseInstruction]):
+    def write_instructions(self, address_or_symbol: Symbol, instructions: list[assembler.BaseInstruction]):
         address = self.resolve_symbol(address_or_symbol)
-        self.write(address, assembler.assemble_instructions(address, instructions, symbols=self.symbols))
+        self.write(
+            address,
+            assembler.assemble_instructions(address, instructions, symbols=self.symbols),
+        )
 
 
 class DolFile(DolEditor):
