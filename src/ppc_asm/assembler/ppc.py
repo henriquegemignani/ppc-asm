@@ -714,7 +714,7 @@ def mulli(output_register: GeneralRegister, input_register: GeneralRegister, lit
     )
 
 
-def fmuls(output_register: GeneralRegister, ra: GeneralRegister, rc: GeneralRegister):
+def fmuls(output_register: GeneralRegister, ra: GeneralRegister, unused, rc: GeneralRegister):
     return Instruction.compose(
         (
             (59, 6, False),
@@ -729,7 +729,7 @@ def fmuls(output_register: GeneralRegister, ra: GeneralRegister, rc: GeneralRegi
     )
 
 
-def fdivs(output_register: GeneralRegister, ra: GeneralRegister, rb: GeneralRegister):
+def fdivs(output_register: GeneralRegister, ra: GeneralRegister, unused, rb: GeneralRegister):
     return Instruction.compose(
         (
             (59, 6, False),
