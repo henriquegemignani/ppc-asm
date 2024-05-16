@@ -729,14 +729,14 @@ def fmuls(output_register: GeneralRegister, ra: GeneralRegister, unused, rc: Gen
     )
 
 
-def fdivs(output_register: GeneralRegister, ra: GeneralRegister, unused, rb: GeneralRegister):
+def fdivs(output_register: GeneralRegister, ra: GeneralRegister, rb: GeneralRegister, unused):
     return Instruction.compose(
         (
             (59, 6, False),
             (output_register.number, 5, False),
             (ra.number, 5, False),
-            (unused, 5, False),
             (rb.number, 5, False),
+            (unused, 5, False),
             (18, 5, False),
             (0, 1, False)
 
