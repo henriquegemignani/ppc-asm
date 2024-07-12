@@ -619,13 +619,16 @@ def add(output_register: GeneralRegister, input_register1: GeneralRegister, inpu
     """
     output_register = input_register1 + input_register2
     """
-    return Instruction.compose(((31, 6, False),
-                                (output_register.number, 5, False),
-                                (input_register1.number, 5, False),
-                                (input_register2.number, 5, False),
-                                (266, 10, False),
-                                (0, 1, False)
-                                ))
+    return Instruction.compose(
+        (
+            (31, 6, False),
+            (output_register.number, 5, False),
+            (input_register1.number, 5, False),
+            (input_register2.number, 5, False),
+            (266, 10, False),
+            (0, 1, False),
+        )
+    )
 
 
 def addi(output_register: GeneralRegister, input_register: GeneralRegister, literal: int):
