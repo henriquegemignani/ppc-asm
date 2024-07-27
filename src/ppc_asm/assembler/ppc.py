@@ -724,8 +724,7 @@ def fmuls(output_register: GeneralRegister, ra: GeneralRegister, unused, rc: Gen
             (unused, 5, False),
             (rc.number, 5, False),
             (25, 5, False),
-            (0, 1, False)
-
+            (0, 1, False),
         )
     )
 
@@ -739,7 +738,6 @@ def fdivs(output_register: GeneralRegister, ra: GeneralRegister, rb: GeneralRegi
             (rb.number, 5, False),
             (unused, 5, False),
             (18, 5, False),
-            (0, 1, False)
-
+            (0, 1, False),
         )
     )
