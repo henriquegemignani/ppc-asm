@@ -160,6 +160,7 @@ r10 = GeneralRegister(10)
 r11 = GeneralRegister(11)
 r12 = GeneralRegister(12)
 r13 = GeneralRegister(13)
+r14 = GeneralRegister(14)
 r25 = GeneralRegister(25)
 r26 = GeneralRegister(26)
 r27 = GeneralRegister(27)
@@ -172,6 +173,34 @@ f0 = FloatRegister(0)
 f1 = FloatRegister(1)
 f2 = FloatRegister(2)
 f3 = FloatRegister(3)
+f4 = FloatRegister(4)
+f5 = FloatRegister(5)
+f6 = FloatRegister(6)
+f7 = FloatRegister(7)
+f8 = FloatRegister(8)
+f9 = FloatRegister(9)
+f10 = FloatRegister(10)
+f11 = FloatRegister(11)
+f12 = FloatRegister(12)
+f13 = FloatRegister(13)
+f14 = FloatRegister(14)
+f15 = FloatRegister(15)
+f16 = FloatRegister(16)
+f17 = FloatRegister(17)
+f18 = FloatRegister(18)
+f19 = FloatRegister(19)
+f20 = FloatRegister(20)
+f21 = FloatRegister(21)
+f22 = FloatRegister(22)
+f23 = FloatRegister(23)
+f24 = FloatRegister(24)
+f25 = FloatRegister(25)
+f26 = FloatRegister(26)
+f27 = FloatRegister(27)
+f28 = FloatRegister(28)
+f29 = FloatRegister(29)
+f30 = FloatRegister(30)
+f31 = FloatRegister(31)
 
 # Special Registers
 LR = 8
@@ -698,5 +727,33 @@ def mulli(output_register: GeneralRegister, input_register: GeneralRegister, lit
             (output_register.number, 5, False),
             (input_register.number, 5, False),
             (literal, 16, True),
+        )
+    )
+
+
+def fmuls(output_register: GeneralRegister, ra: GeneralRegister, unused, rc: GeneralRegister):
+    return Instruction.compose(
+        (
+            (59, 6, False),
+            (output_register.number, 5, False),
+            (ra.number, 5, False),
+            (unused, 5, False),
+            (rc.number, 5, False),
+            (25, 5, False),
+            (0, 1, False),
+        )
+    )
+
+
+def fdivs(output_register: GeneralRegister, ra: GeneralRegister, rb: GeneralRegister, unused):
+    return Instruction.compose(
+        (
+            (59, 6, False),
+            (output_register.number, 5, False),
+            (ra.number, 5, False),
+            (rb.number, 5, False),
+            (unused, 5, False),
+            (18, 5, False),
+            (0, 1, False),
         )
     )
