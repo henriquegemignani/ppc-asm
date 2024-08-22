@@ -24,6 +24,9 @@ classifiers = [
 requires-python = ">=3.8"
 dynamic = ["version"]
 
+dependencies = [
+]
+
 [project.readme]
 file = "README.md"
 content-type = "text/markdown"
@@ -38,6 +41,15 @@ test = [
     "pytest-mock",
 ]
 
+# # Entry Points for PyInstaller
+# [project.entry-points.pyinstaller40]
+# hook-dirs = "python_project_template.__pyinstaller:get_hook_dirs"
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+write_to = "src/ppc_asm/version.py"
+git_describe_command = "git describe --dirty --tags --long --match v[0-9]*"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = [
@@ -49,11 +61,6 @@ filterwarnings = [
     "error",
     "ignore::DeprecationWarning",
 ]
-
-[tool.setuptools_scm]
-local_scheme = "no-local-version"
-write_to = "src/ppc_asm/version.py"
-git_describe_command = "git describe --dirty --tags --long --match v[0-9]*"
 
 [tool.ruff]
 line-length = 120
