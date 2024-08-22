@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import dataclasses
 import struct
-from typing import TYPE_CHECKING, BinaryIO, Iterable, Tuple, Union
+from typing import TYPE_CHECKING, BinaryIO, Union
 
 from ppc_asm import assembler
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from pathlib import Path
 
 __all__ = ["Section", "DolHeader", "Symbol", "DolEditor", "DolFile"]
@@ -67,7 +68,7 @@ class DolHeader:
         return None
 
 
-Symbol = Union[int, str, Tuple[str, int]]
+Symbol = Union[int, str, tuple[str, int]]
 
 
 class DolEditor:

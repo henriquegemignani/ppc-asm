@@ -14,7 +14,7 @@ def test_load_unsigned_32bit_invalid(value):
     ["value", "expected"],
     [
         (0x00000000, b"\x3c\x20\x00\x00\x60\x21\x00\x00"),
-        (0xFFFFFFFF, b"\x3c\x20\xFF\xFF\x60\x21\xFF\xFF"),
+        (0xFFFFFFFF, b"\x3c\x20\xff\xff\x60\x21\xff\xff"),
     ],
 )
 def test_load_unsigned_32bit_valid(value, expected):

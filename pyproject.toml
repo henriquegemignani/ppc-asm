@@ -15,14 +15,17 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 requires-python = ">=3.8"
 dynamic = ["version"]
+
+dependencies = [
+]
 
 [project.readme]
 file = "README.md"
@@ -38,6 +41,15 @@ test = [
     "pytest-mock",
 ]
 
+# # Entry Points for PyInstaller
+# [project.entry-points.pyinstaller40]
+# hook-dirs = "python_project_template.__pyinstaller:get_hook_dirs"
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+write_to = "src/ppc_asm/version.py"
+git_describe_command = "git describe --dirty --tags --long --match v[0-9]*"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = [
@@ -50,13 +62,12 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 
-[tool.setuptools_scm]
-local_scheme = "no-local-version"
-write_to = "src/ppc_asm/version.py"
-git_describe_command = "git describe --dirty --tags --long --match v[0-9]*"
-
 [tool.ruff]
 line-length = 120
+target-version = "py39"
+src = ["src"]
+
+[tool.ruff.lint]
 select = [
     "E", "F", "W", "C90", "I", "UP", "C4",
     "RSE",
@@ -72,13 +83,6 @@ select = [
     "PLW",
 ]
 extend-ignore = [
+    "ISC001",  # may cause conflicts with formatter
     "PLR0913",  # Too many arguments for function
 ]
-src = ["src"]
-
-# Version to target for generated code.
-target-version = "py38"
-
-[tool.black]
-line-length = 120
-target-version = ['py38', 'py39', 'py310', 'py311']
