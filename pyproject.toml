@@ -15,11 +15,11 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 requires-python = ">=3.8"
 dynamic = ["version"]
@@ -64,6 +64,10 @@ filterwarnings = [
 
 [tool.ruff]
 line-length = 120
+target-version = "py39"
+src = ["src"]
+
+[tool.ruff.lint]
 select = [
     "E", "F", "W", "C90", "I", "UP", "C4",
     "RSE",
@@ -81,11 +85,3 @@ select = [
 extend-ignore = [
     "PLR0913",  # Too many arguments for function
 ]
-src = ["src"]
-
-# Version to target for generated code.
-target-version = "py38"
-
-[tool.black]
-line-length = 120
-target-version = ['py38', 'py39', 'py310', 'py311']
