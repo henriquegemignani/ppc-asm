@@ -13,8 +13,8 @@ __all__ = [
 
 def assemble_instructions(
     address: int,
-    instructions: typing.List[BaseInstruction],
-    symbols: typing.Dict[str, int] = None,
+    instructions: list[BaseInstruction],
+    symbols: dict[str, int] = None,
 ) -> typing.Iterable[int]:
     if symbols is not None:
         symbols = copy.copy(symbols)
