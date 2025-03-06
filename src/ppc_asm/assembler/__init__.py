@@ -14,7 +14,7 @@ __all__ = [
 def assemble_instructions(
     address: int,
     instructions: list[BaseInstruction],
-    symbols: dict[str, int] = None,
+    symbols: typing.Optional[dict[str, int]] = None,
 ) -> typing.Iterable[int]:
     if symbols is not None:
         symbols = copy.copy(symbols)

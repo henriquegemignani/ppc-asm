@@ -1,0 +1,38 @@
+name: Linting
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches:
+      - main
+      - stable
+
+jobs:
+  mypy-required:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          cache: "pip"
+
+      - name: Install Python packages
+        run: |
+          python -m pip install -e "." mypy
+
+      - name: Mypy on required files
+        uses: tsuyoshicho/action-mypy@v5
+        with:
+          github_token: ${{ secrets.github_token }}
+          # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
+          reporter: github-check
+          target: --config-file=pyproject.toml
+          fail_on_error: true
+          install_types: false

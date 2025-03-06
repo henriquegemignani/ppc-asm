@@ -4,12 +4,18 @@ import dataclasses as _dataclasses
 import struct as _struct
 import typing as _typing
 
+if _typing.TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator
 
-def _pack(*args):
-    return _struct.pack(*args)
+    from typing_extensions import Self
+
+
+def _pack(fmt: str, *args: int) -> Iterable[int]:
+    return _struct.pack(fmt, *args)
 
 
 JumpTarget = _typing.Union[str, int]
+InstructionComponents = tuple[tuple[int, int, bool], ...]
 
 
 @_dataclasses.dataclass(frozen=True)
@@ -18,12 +24,12 @@ class Register:
 
 
 class GeneralRegister(Register):
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"r{self.number}"
 
 
 class FloatRegister(Register):
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"f{self.number}"
 
 
@@ -31,25 +37,25 @@ class BaseInstruction:
     label: str | None
     name: str | None = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.label = None
 
-    def with_label(self, label: str) -> BaseInstruction:
+    def with_label(self, label: str) -> Self:
         self.label = label
         return self
 
-    def with_name(self, name: str):
+    def with_name(self, name: str) -> Self:
         self.name = name
         return self
 
-    def bytes_for(self, address: int, symbols: dict[str, int]):
+    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
         raise NotImplementedError
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         raise NotImplementedError
 
     @property
-    def byte_count(self):
+    def byte_count(self) -> int:
         raise NotImplementedError
 
 
@@ -60,23 +66,23 @@ class Instruction(BaseInstruction):
         super().__init__()
         self.value = value
 
-    def bytes_for(self, address: int, symbols: dict[str, int]):
+    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
         return iter(_pack(">I", self.value))
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Instruction) and self.value == other.value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.name is None:
             return f"<{self.value:08x}>"
         return f"<{self.name}>"
 
     @property
-    def byte_count(self):
+    def byte_count(self) -> int:
         return 4
 
     @classmethod
-    def compose(cls, data: tuple[tuple[int, int, bool], ...]):
+    def compose(cls, data: InstructionComponents) -> Self:
         value = 0
         bits_left = 32
         for item, bit_size, signed in data:
@@ -95,18 +101,18 @@ class Instruction(BaseInstruction):
 
 
 class AddressDependantInstruction(BaseInstruction):
-    def __init__(self, factory: _typing.Callable[[int], tuple[tuple[int, int, bool], ...]]):
+    def __init__(self, factory: _typing.Callable[[int], InstructionComponents]):
         super().__init__()
         self.factory = factory
 
-    def bytes_for(self, address: int, symbols: dict[str, int]):
+    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
         yield from Instruction.compose(self.factory(address)).bytes_for(address, symbols=symbols)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, AddressDependantInstruction) and self.factory == other.factory
 
     @property
-    def byte_count(self):
+    def byte_count(self) -> int:
         return 4
 
 
@@ -114,7 +120,7 @@ class RelativeAddressInstruction(BaseInstruction):
     def __init__(
         self,
         address_or_symbol: JumpTarget,
-        factory: _typing.Callable[[int, int], tuple[tuple[int, int, bool], ...]],
+        factory: _typing.Callable[[int, int], InstructionComponents],
     ):
         super().__init__()
         self.address_or_symbol = address_or_symbol
@@ -127,22 +133,22 @@ class RelativeAddressInstruction(BaseInstruction):
             address = self.address_or_symbol
         return Instruction.compose(self.factory(address, instruction_address))
 
-    def bytes_for(self, instruction_address: int, symbols: dict[str, int]):
+    def bytes_for(self, instruction_address: int, symbols: dict[str, int]) -> Iterator[int]:
         instruction = self.concrete_instruction(instruction_address, symbols=symbols)
         yield from instruction.bytes_for(instruction_address, symbols=symbols)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, RelativeAddressInstruction) and (
             self.factory == other.factory and self.address_or_symbol == other.address_or_symbol
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.name is None:
             return f"<relative: {self.address_or_symbol} - {self.factory}>"
         return f"<{self.name}>"
 
     @property
-    def byte_count(self):
+    def byte_count(self) -> int:
         return 4
 
 
@@ -207,7 +213,7 @@ LR = 8
 CTR = 9
 
 
-def lmw(start_register: GeneralRegister, offset: int, input_register: GeneralRegister):
+def lmw(start_register: GeneralRegister, offset: int, input_register: GeneralRegister) -> Instruction:
     return Instruction.compose(
         (
             (46, 6, False),
@@ -218,7 +224,7 @@ def lmw(start_register: GeneralRegister, offset: int, input_register: GeneralReg
     )
 
 
-def lwz(output_register: GeneralRegister, offset: int, input_register: GeneralRegister):
+def lwz(output_register: GeneralRegister, offset: int, input_register: GeneralRegister) -> Instruction:
     """
     *(output_register + offset) = input_register
     """
@@ -236,7 +242,7 @@ def lwzx(
     output_register: GeneralRegister,
     input_register_a: GeneralRegister,
     input_register_b: GeneralRegister,
-):
+) -> Instruction:
     """
     output_register = *(input_register_a + input_register_b)
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_lwzx_lx_lwzi_instrus.html
@@ -253,7 +259,7 @@ def lwzx(
     )
 
 
-def lhz(output_register: GeneralRegister, offset: int, input_register: GeneralRegister):
+def lhz(output_register: GeneralRegister, offset: int, input_register: GeneralRegister) -> Instruction:
     """
     *(output_register + offset) = input_register
     """
@@ -267,7 +273,7 @@ def lhz(output_register: GeneralRegister, offset: int, input_register: GeneralRe
     )
 
 
-def lbz(output_register: GeneralRegister, offset: int, input_register: GeneralRegister):
+def lbz(output_register: GeneralRegister, offset: int, input_register: GeneralRegister) -> Instruction:
     """
     *(output_register + offset) = input_register
     """
@@ -287,7 +293,7 @@ def rlwinm(
     shift: int,
     mask_begin: int,
     mask_end: int,
-):
+) -> Instruction:
     """
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_rlwinm_rlinm_rtlwrdimm_instrs.html
     """
@@ -309,7 +315,7 @@ def or_(
     input_register_a: GeneralRegister,
     input_register_b: GeneralRegister,
     record_bit: bool = False,
-):
+) -> Instruction:
     """
     output_register = input_register_a | input_register_b
     """
@@ -326,7 +332,7 @@ def or_(
     )
 
 
-def ori(output_register: GeneralRegister, input_register: GeneralRegister, constant: int):
+def ori(output_register: GeneralRegister, input_register: GeneralRegister, constant: int) -> Instruction:
     """
     output_register = input_register | constant
     """
@@ -340,25 +346,25 @@ def ori(output_register: GeneralRegister, input_register: GeneralRegister, const
     )
 
 
-def nop():
+def nop() -> Instruction:
     return ori(r0, r0, 0x0)
 
 
-def li(register: GeneralRegister, literal: int):
+def li(register: GeneralRegister, literal: int) -> Instruction:
     """
     register = literal
     """
     return addi(register, r0, literal).with_name(f"li {register}, {literal}")
 
 
-def lis(register: GeneralRegister, literal: int):
+def lis(register: GeneralRegister, literal: int) -> Instruction:
     """
     register = literal
     """
     return addis(register, r0, literal)
 
 
-def lfs(output_register: FloatRegister, offset: int, input_register: GeneralRegister):
+def lfs(output_register: FloatRegister, offset: int, input_register: GeneralRegister) -> Instruction:
     """
     output_register = (float) *(input_register + offset)
 
@@ -374,7 +380,7 @@ def lfs(output_register: FloatRegister, offset: int, input_register: GeneralRegi
     )
 
 
-def cmpwi(input_register: GeneralRegister, literal: int):
+def cmpwi(input_register: GeneralRegister, literal: int) -> Instruction:
     return Instruction.compose(
         (
             (11, 6, False),
@@ -387,7 +393,7 @@ def cmpwi(input_register: GeneralRegister, literal: int):
     )
 
 
-def cmp(bf, unused, ra: GeneralRegister, rb: GeneralRegister):
+def cmp(bf: int, unused: int, ra: GeneralRegister, rb: GeneralRegister) -> Instruction:
     """
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_cmp_instr.html
     :param bf: Specifies Condition Register Field 0-7 which indicates result of compare.
@@ -410,13 +416,13 @@ def cmp(bf, unused, ra: GeneralRegister, rb: GeneralRegister):
     )
 
 
-def cmpw(bf, ra, rb):
+def cmpw(bf: int, ra: GeneralRegister, rb: GeneralRegister) -> Instruction:
     """https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_em_fpcinst.html"""
     return cmp(bf, 0, ra, rb)
 
 
-def _jump_to_relative_address(address_or_symbol: JumpTarget, *, relative: bool, link: bool):
-    def with_inc_address(address: int, instruction_address: int):
+def _jump_to_relative_address(address_or_symbol: JumpTarget, *, relative: bool, link: bool) -> BaseInstruction:
+    def with_inc_address(address: int, instruction_address: int) -> InstructionComponents:
         jump_offset = (address - instruction_address) // 4
         return (
             (18, 6, False),
@@ -432,7 +438,7 @@ def _jump_to_relative_address(address_or_symbol: JumpTarget, *, relative: bool, 
         return instruction
 
 
-def b(address_or_symbol: JumpTarget, *, relative: bool = False):
+def b(address_or_symbol: JumpTarget, *, relative: bool = False) -> BaseInstruction:
     """
     jumps to the given address, not setting the link register
     """
@@ -441,7 +447,7 @@ def b(address_or_symbol: JumpTarget, *, relative: bool = False):
     )
 
 
-def bl(address_or_symbol: JumpTarget, *, relative: bool = False):
+def bl(address_or_symbol: JumpTarget, *, relative: bool = False) -> BaseInstruction:
     """
     jumps to the given address, setting the link register
     """
@@ -458,10 +464,10 @@ def _conditional_branch(
     relative: bool = False,
     absolute_address: bool = False,
     link_bit: bool = False,
-):
+) -> BaseInstruction:
     # https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_ext_br_mnem_bofield.html#idalangref_ext_br_mnem_bofield__row-d2e17648
 
-    def with_inc_address(address: int, instruction_address: int):
+    def with_inc_address(address: int, instruction_address: int) -> InstructionComponents:
         jump_offset = (address - instruction_address) // 4
         return (
             (16, 6, False),
@@ -479,14 +485,14 @@ def _conditional_branch(
         return instruction
 
 
-def bdnz(address_or_symbol: JumpTarget, relative: bool = False):
+def bdnz(address_or_symbol: JumpTarget, relative: bool = False) -> BaseInstruction:
     """https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_brmenmonics_booperand.html"""
     bo = 16
     bi = 0
     return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
 
 
-def beq(address_or_symbol: JumpTarget, relative: bool = False):
+def beq(address_or_symbol: JumpTarget, relative: bool = False) -> BaseInstruction:
     """
     jumps to the given address, if last comparison was a successful equality
     """
@@ -495,7 +501,7 @@ def beq(address_or_symbol: JumpTarget, relative: bool = False):
     return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
 
 
-def bgt(address_or_symbol: JumpTarget, relative: bool = False):
+def bgt(address_or_symbol: JumpTarget, relative: bool = False) -> BaseInstruction:
     """
     jumps to the given address, if last comparison was a successful equality
     """
@@ -504,7 +510,7 @@ def bgt(address_or_symbol: JumpTarget, relative: bool = False):
     return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
 
 
-def bge(address_or_symbol: JumpTarget, relative: bool = False):
+def bge(address_or_symbol: JumpTarget, relative: bool = False) -> BaseInstruction:
     """
     jumps to the given address, if last comparison was a successful equality
     """
@@ -513,7 +519,7 @@ def bge(address_or_symbol: JumpTarget, relative: bool = False):
     return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
 
 
-def ble(address_or_symbol: JumpTarget, relative: bool = False):
+def ble(address_or_symbol: JumpTarget, relative: bool = False) -> BaseInstruction:
     """
     jumps to the given address, if last comparison was a successful equality
     """
@@ -522,7 +528,7 @@ def ble(address_or_symbol: JumpTarget, relative: bool = False):
     return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
 
 
-def bne(address_or_symbol: JumpTarget, relative: bool = False):
+def bne(address_or_symbol: JumpTarget, relative: bool = False) -> BaseInstruction:
     """
     jumps to the given address, if last comparison was a successful equality
     """
@@ -531,7 +537,7 @@ def bne(address_or_symbol: JumpTarget, relative: bool = False):
     return _conditional_branch(bo, bi, address_or_symbol, relative=relative)
 
 
-def bclr(bo, bi, bh):
+def bclr(bo: int, bi: int, bh: int) -> Instruction:
     # https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_branch_conditional_link_register.html
     lk = 0
     return Instruction.compose(
@@ -547,12 +553,12 @@ def bclr(bo, bi, bh):
     )
 
 
-def blr():
+def blr() -> Instruction:
     """Branches to the address set by the link register. Does not set the link register."""
     return bclr(20, 0, 0)
 
 
-def bcctrl(bo, bi, bh):
+def bcctrl(bo: int, bi: int, bh: int) -> Instruction:
     """Branch conditionally. Sets the link register."""
     lk = 1
     return Instruction.compose(
@@ -568,7 +574,7 @@ def bcctrl(bo, bi, bh):
     )
 
 
-def bctrl():
+def bctrl() -> Instruction:
     """Branches always. Sets the link register."""
     return bcctrl(20, 0, 0)
 
@@ -578,7 +584,7 @@ def _store(
     offset: int,
     output_register: GeneralRegister,
     op_code: int,
-):
+) -> Instruction:
     return Instruction.compose(
         (
             (op_code, 6, False),
@@ -589,45 +595,45 @@ def _store(
     )
 
 
-def stb(input_register: GeneralRegister, offset: int, output_register: GeneralRegister):
+def stb(input_register: GeneralRegister, offset: int, output_register: GeneralRegister) -> Instruction:
     """
     *(output_register +offset) = input_register
     """
     return _store(input_register, offset, output_register, 38)
 
 
-def stw(input_register: GeneralRegister, offset: int, output_register: GeneralRegister):
+def stw(input_register: GeneralRegister, offset: int, output_register: GeneralRegister) -> Instruction:
     """
     *(output_register +offset) = input_register
     """
     return _store(input_register, offset, output_register, 36)
 
 
-def stfs(input_register: FloatRegister, offset: int, output_register: GeneralRegister):
+def stfs(input_register: FloatRegister, offset: int, output_register: GeneralRegister) -> Instruction:
     """
     *(float*)(output_register +offset) = input_register
     """
     return _store(input_register, offset, output_register, 52)
 
 
-def stwu(input_register: GeneralRegister, offset: int, output_register: GeneralRegister):
+def stwu(input_register: GeneralRegister, offset: int, output_register: GeneralRegister) -> Instruction:
     return _store(input_register, offset, output_register, 37)
 
 
-def stmw(start_register: GeneralRegister, offset: int, output_register: GeneralRegister):
+def stmw(start_register: GeneralRegister, offset: int, output_register: GeneralRegister) -> Instruction:
     return _store(start_register, offset, output_register, 47)
 
 
-def sync():
+def sync() -> Instruction:
     return Instruction(0x7C0004AC)
 
 
-def icbi(ra: int, rb: int):
+def icbi(ra: int, rb: int) -> Instruction:
     value = 0x7C0007AC + (ra << 16) + (rb << 11)
     return Instruction(value)
 
 
-def dcbi(ra: int, rb: int):
+def dcbi(ra: int, rb: int) -> Instruction:
     return Instruction.compose(
         (
             (31, 6, False),
@@ -640,11 +646,13 @@ def dcbi(ra: int, rb: int):
     )
 
 
-def isync():
+def isync() -> Instruction:
     return Instruction(0x4C00012C)
 
 
-def add(output_register: GeneralRegister, input_register1: GeneralRegister, input_register2: GeneralRegister):
+def add(
+    output_register: GeneralRegister, input_register1: GeneralRegister, input_register2: GeneralRegister
+) -> Instruction:
     """
     output_register = input_register1 + input_register2
     """
@@ -660,7 +668,7 @@ def add(output_register: GeneralRegister, input_register1: GeneralRegister, inpu
     )
 
 
-def addi(output_register: GeneralRegister, input_register: GeneralRegister, literal: int):
+def addi(output_register: GeneralRegister, input_register: GeneralRegister, literal: int) -> Instruction:
     """
     output_register = input_register + literal
     """
@@ -674,7 +682,7 @@ def addi(output_register: GeneralRegister, input_register: GeneralRegister, lite
     )
 
 
-def addis(output_register: GeneralRegister, input_register: GeneralRegister, literal: int):
+def addis(output_register: GeneralRegister, input_register: GeneralRegister, literal: int) -> Instruction:
     """
     output_register = (input_register + literal) << 16
     """
@@ -688,7 +696,9 @@ def addis(output_register: GeneralRegister, input_register: GeneralRegister, lit
     )
 
 
-def _special_register_op(input_register: Register, special_register: int, magic_value: int, op_code: int):
+def _special_register_op(
+    input_register: Register, special_register: int, magic_value: int, op_code: int
+) -> Instruction:
     special_register_top = special_register >> 5
     special_register_bot = special_register & 0b11111
 
@@ -704,15 +714,15 @@ def _special_register_op(input_register: Register, special_register: int, magic_
     )
 
 
-def mtspr(special_register, input_register: GeneralRegister):
+def mtspr(special_register: int, input_register: GeneralRegister) -> Instruction:
     return _special_register_op(input_register, special_register, 467, 31)
 
 
-def mtctr(rs: GeneralRegister):
+def mtctr(rs: GeneralRegister) -> Instruction:
     return mtspr(CTR, rs)
 
 
-def mfspr(output_register: GeneralRegister, special_register):
+def mfspr(output_register: GeneralRegister, special_register: int) -> Instruction:
     """
     Move from Special-Purpose Register
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_mfspr_spr_instrs.html
@@ -720,7 +730,7 @@ def mfspr(output_register: GeneralRegister, special_register):
     return _special_register_op(output_register, special_register, 339, 31)
 
 
-def mulli(output_register: GeneralRegister, input_register: GeneralRegister, literal: int):
+def mulli(output_register: GeneralRegister, input_register: GeneralRegister, literal: int) -> Instruction:
     return Instruction.compose(
         (
             (7, 6, False),
@@ -731,7 +741,7 @@ def mulli(output_register: GeneralRegister, input_register: GeneralRegister, lit
     )
 
 
-def fmuls(output_register: GeneralRegister, ra: GeneralRegister, rc: GeneralRegister):
+def fmuls(output_register: GeneralRegister, ra: GeneralRegister, rc: GeneralRegister) -> Instruction:
     return Instruction.compose(
         (
             (59, 6, False),
@@ -745,7 +755,7 @@ def fmuls(output_register: GeneralRegister, ra: GeneralRegister, rc: GeneralRegi
     )
 
 
-def fdivs(output_register: GeneralRegister, ra: GeneralRegister, rb: GeneralRegister):
+def fdivs(output_register: GeneralRegister, ra: GeneralRegister, rb: GeneralRegister) -> Instruction:
     return Instruction.compose(
         (
             (59, 6, False),
