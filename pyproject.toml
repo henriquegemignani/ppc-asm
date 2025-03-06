@@ -64,7 +64,6 @@ filterwarnings = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py39"
 src = ["src"]
 
 [tool.ruff.lint]
@@ -85,4 +84,16 @@ select = [
 extend-ignore = [
     "ISC001",  # may cause conflicts with formatter
     "PLR0913",  # Too many arguments for function
+]
+
+[tool.mypy]
+files = [
+    "src"
+]
+follow_imports = "silent"
+disallow_untyped_defs = true
+local_partial_types = true
+warn_unused_ignores = true
+enable_error_code = [
+    "ignore-without-code",
 ]

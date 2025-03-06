@@ -9,6 +9,7 @@ from ppc_asm import assembler
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from pathlib import Path
+    from types import TracebackType
 
 __all__ = ["Section", "DolHeader", "Symbol", "DolEditor", "DolFile"]
 
@@ -47,7 +48,7 @@ class DolHeader:
         return cls(sections, bss_address, bss_size, entry_point)
 
     def as_bytes(self) -> bytes:
-        args = []
+        args: list[int] = []
         args.extend(section.offset for section in self.sections)
         args.extend(section.base_address for section in self.sections)
         args.extend(section.size for section in self.sections)
@@ -60,6 +61,7 @@ class DolHeader:
             relative_to_base = address - section.base_address
             if 0 <= relative_to_base < section.size:
                 return section
+        return None
 
     def offset_for_address(self, address: int) -> int | None:
         section = self.section_for_address(address)
@@ -94,21 +96,21 @@ class DolEditor:
             raise ValueError(f"Address 0x{address:x} could not be resolved for dol")
         return offset
 
-    def _seek_and_read(self, seek: int, size: int):
+    def _seek_and_read(self, seek: int, size: int) -> bytes:
         raise NotImplementedError
 
-    def _seek_and_write(self, seek: int, data: bytes):
+    def _seek_and_write(self, seek: int, data: bytes) -> None:
         raise NotImplementedError
 
     def read(self, address: int, size: int) -> bytes:
         offset = self.offset_for_address(address)
         return self._seek_and_read(offset, size)
 
-    def write(self, address_or_symbol: Symbol, code_points: Iterable[int]):
+    def write(self, address_or_symbol: Symbol, code_points: Iterable[int]) -> None:
         offset = self.offset_for_address(self.resolve_symbol(address_or_symbol))
         self._seek_and_write(offset, bytes(code_points))
 
-    def write_instructions(self, address_or_symbol: Symbol, instructions: list[assembler.BaseInstruction]):
+    def write_instructions(self, address_or_symbol: Symbol, instructions: list[assembler.BaseInstruction]) -> None:
         address = self.resolve_symbol(address_or_symbol)
         self.write(
             address,
@@ -128,24 +130,33 @@ class DolFile(DolEditor):
         self.dol_path = dol_path
         super().__init__(DolHeader.from_bytes(header_bytes))
 
-    def set_editable(self, editable: bool):
+    def set_editable(self, editable: bool) -> None:
         self.editable = editable
 
-    def __enter__(self):
+    def __enter__(self) -> None:
+        f: BinaryIO
         if self.editable:
             f = self.dol_path.open("r+b")
         else:
             f = self.dol_path.open("rb")
         self.dol_file = f.__enter__()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.dol_file.__exit__(exc_type, exc_type, exc_tb)
+    def __exit__(
+        self,
+        type_: type[BaseException] | None,
+        value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        assert self.dol_file is not None
+        self.dol_file.__exit__(type_, value, traceback)
         self.dol_file = None
 
-    def _seek_and_read(self, seek: int, size: int):
+    def _seek_and_read(self, seek: int, size: int) -> bytes:
+        assert self.dol_file is not None
         self.dol_file.seek(seek)
         return self.dol_file.read(size)
 
-    def _seek_and_write(self, seek: int, data: bytes):
+    def _seek_and_write(self, seek: int, data: bytes) -> None:
+        assert self.dol_file is not None
         self.dol_file.seek(seek)
         self.dol_file.write(data)
