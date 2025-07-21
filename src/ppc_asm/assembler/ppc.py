@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses as _dataclasses
 import struct as _struct
 import typing as _typing
+from typing import final
 
 if _typing.TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -54,11 +55,15 @@ class BaseInstruction:
     def __eq__(self, other: object) -> bool:
         raise NotImplementedError
 
+    def __hash__(self) -> int:
+        raise NotImplementedError
+
     @property
     def byte_count(self) -> int:
         raise NotImplementedError
 
 
+@final
 class Instruction(BaseInstruction):
     value: int
 
@@ -71,6 +76,9 @@ class Instruction(BaseInstruction):
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Instruction) and self.value == other.value
+
+    def __hash__(self) -> int:
+        return hash(self.value)
 
     def __repr__(self) -> str:
         if self.name is None:
@@ -100,6 +108,7 @@ class Instruction(BaseInstruction):
         return cls(value)
 
 
+@final
 class AddressDependantInstruction(BaseInstruction):
     def __init__(self, factory: _typing.Callable[[int], InstructionComponents]):
         super().__init__()
@@ -111,11 +120,15 @@ class AddressDependantInstruction(BaseInstruction):
     def __eq__(self, other: object) -> bool:
         return isinstance(other, AddressDependantInstruction) and self.factory == other.factory
 
+    def __hash__(self) -> int:
+        return hash(self.factory)
+
     @property
     def byte_count(self) -> int:
         return 4
 
 
+@final
 class RelativeAddressInstruction(BaseInstruction):
     def __init__(
         self,
@@ -141,6 +154,9 @@ class RelativeAddressInstruction(BaseInstruction):
         return isinstance(other, RelativeAddressInstruction) and (
             self.factory == other.factory and self.address_or_symbol == other.address_or_symbol
         )
+
+    def __hash__(self) -> int:
+        return hash((self.address_or_symbol, self.factory))
 
     def __repr__(self) -> str:
         if self.name is None:

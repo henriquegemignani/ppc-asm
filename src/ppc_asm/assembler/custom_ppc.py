@@ -21,6 +21,9 @@ class CompositeInstruction(ppc.BaseInstruction):
     def __eq__(self, other: object) -> bool:
         return isinstance(other, CompositeInstruction) and other.instructions == self.instructions
 
+    def __hash__(self) -> int:
+        return hash(self.instructions)
+
     @property
     def byte_count(self) -> int:
         return sum(instruction.byte_count for instruction in self.instructions)
@@ -40,6 +43,9 @@ class CurrentAddressInstruction(ppc.BaseInstruction):
             other.output_register,
             other.offset,
         ) == (self.output_register, self.offset)
+
+    def __hash__(self) -> int:
+        return hash((self.output_register, self.offset))
 
     @property
     def byte_count(self) -> int:
