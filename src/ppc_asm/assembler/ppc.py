@@ -146,9 +146,9 @@ class RelativeAddressInstruction(BaseInstruction):
             address = self.address_or_symbol
         return Instruction.compose(self.factory(address, instruction_address))
 
-    def bytes_for(self, instruction_address: int, symbols: dict[str, int]) -> Iterator[int]:
-        instruction = self.concrete_instruction(instruction_address, symbols=symbols)
-        yield from instruction.bytes_for(instruction_address, symbols=symbols)
+    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
+        instruction = self.concrete_instruction(address, symbols=symbols)
+        yield from instruction.bytes_for(address, symbols=symbols)
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, RelativeAddressInstruction) and (
