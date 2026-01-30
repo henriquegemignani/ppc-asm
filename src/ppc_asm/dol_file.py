@@ -96,6 +96,26 @@ class DolEditor:
             raise ValueError(f"Address 0x{address:x} could not be resolved for dol")
         return offset
 
+    def add_section(self, base_address: int, offset: int, size: int) -> None:
+        """Replaces an empty section with a section of the given parameters."""
+        new_sections = list(self.header.sections)
+
+        found = False
+        for i, section in enumerate(new_sections):
+            if section.size == 0:
+                new_sections[i] = Section(base_address=base_address, offset=offset, size=size)
+                found = True
+                break
+
+        if not found:
+            raise ValueError("No empty section found")
+
+        self.header = dataclasses.replace(
+            self.header,
+            sections=tuple(new_sections),
+        )
+        self._seek_and_write(0, self.header.as_bytes())
+
     def _seek_and_read(self, seek: int, size: int) -> bytes:
         raise NotImplementedError
 
