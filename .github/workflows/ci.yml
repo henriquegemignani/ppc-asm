@@ -77,7 +77,7 @@ jobs:
         run: python -m pytest --cov
 
       - name: codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
 
   pypi:
     runs-on: 'ubuntu-latest'
