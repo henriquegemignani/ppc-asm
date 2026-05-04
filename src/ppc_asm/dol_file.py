@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING, BinaryIO, Union
 from ppc_asm import assembler
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
     from pathlib import Path
     from types import TracebackType
 
-__all__ = ["Section", "DolHeader", "Symbol", "DolEditor", "DolFile"]
+__all__ = ["DolEditor", "DolFile", "DolHeader", "Section", "Symbol"]
 
 _NUM_TEXT_SECTIONS = 7
 _NUM_DATA_SECTIONS = 11
@@ -85,10 +85,9 @@ class DolEditor:
         if isinstance(address_or_symbol, tuple):
             symbol, offset = address_or_symbol
             return self.symbols[symbol] + offset
-        elif isinstance(address_or_symbol, str):
+        if isinstance(address_or_symbol, str):
             return self.symbols[address_or_symbol]
-        else:
-            return address_or_symbol
+        return address_or_symbol
 
     def offset_for_address(self, address: int) -> int:
         offset = self.header.offset_for_address(address)
@@ -130,7 +129,7 @@ class DolEditor:
         offset = self.offset_for_address(self.resolve_symbol(address_or_symbol))
         self._seek_and_write(offset, bytes(code_points))
 
-    def write_instructions(self, address_or_symbol: Symbol, instructions: list[assembler.BaseInstruction]) -> None:
+    def write_instructions(self, address_or_symbol: Symbol, instructions: Sequence[assembler.BaseInstruction]) -> None:
         address = self.resolve_symbol(address_or_symbol)
         self.write(
             address,
@@ -155,10 +154,7 @@ class DolFile(DolEditor):
 
     def __enter__(self) -> None:
         f: BinaryIO
-        if self.editable:
-            f = self.dol_path.open("r+b")
-        else:
-            f = self.dol_path.open("rb")
+        f = self.dol_path.open("r+b") if self.editable else self.dol_path.open("rb")
         self.dol_file = f.__enter__()
 
     def __exit__(

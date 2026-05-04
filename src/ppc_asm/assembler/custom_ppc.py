@@ -5,7 +5,7 @@ import typing as _typing
 from ppc_asm.assembler import ppc
 
 if _typing.TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Iterator, Mapping
 
 
 class CompositeInstruction(ppc.BaseInstruction):
@@ -13,7 +13,7 @@ class CompositeInstruction(ppc.BaseInstruction):
         super().__init__()
         self.instructions = instructions
 
-    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
+    def bytes_for(self, address: int, symbols: Mapping[str, int]) -> Iterator[int]:
         for instruction in self.instructions:
             yield from instruction.bytes_for(address, symbols=symbols)
             address += instruction.byte_count
@@ -35,7 +35,7 @@ class CurrentAddressInstruction(ppc.BaseInstruction):
         self.output_register = output_register
         self.offset = offset
 
-    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
+    def bytes_for(self, address: int, symbols: Mapping[str, int]) -> Iterator[int]:
         return load_unsigned_32bit(self.output_register, address + self.offset).bytes_for(address, symbols=symbols)
 
     def __eq__(self, other: object) -> bool:

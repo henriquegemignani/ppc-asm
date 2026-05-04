@@ -5,24 +5,24 @@ from ppc_asm.assembler import custom_ppc, ppc
 
 
 @pytest.mark.parametrize("value", [-1, 0x100000000])
-def test_load_unsigned_32bit_invalid(value):
+def test_load_unsigned_32bit_invalid(value) -> None:
     with pytest.raises(AssertionError):
         custom_ppc.load_unsigned_32bit(ppc.r1, value)
 
 
 @pytest.mark.parametrize(
-    ["value", "expected"],
+    ("value", "expected"),
     [
         (0x00000000, b"\x3c\x20\x00\x00\x60\x21\x00\x00"),
         (0xFFFFFFFF, b"\x3c\x20\xff\xff\x60\x21\xff\xff"),
     ],
 )
-def test_load_unsigned_32bit_valid(value, expected):
+def test_load_unsigned_32bit_valid(value, expected) -> None:
     codes = list(custom_ppc.load_unsigned_32bit(ppc.r1, value).bytes_for(0, symbols={}))
     assert bytes(codes) == expected
 
 
-def test_composite_bl_single():
+def test_composite_bl_single() -> None:
     inc = ppc.bl(0x80085760)
     comp = custom_ppc.CompositeInstruction((inc,))
 
@@ -34,7 +34,7 @@ def test_composite_bl_single():
     ]
 
 
-def test_composite_bl_double():
+def test_composite_bl_double() -> None:
     target_address = 0x80085760
     start_address = 0x80085760 + 0x9C
 
@@ -48,7 +48,7 @@ def test_composite_bl_double():
     assert composite_bytes == assembled_bytes
 
 
-def test_assemble_with_label():
+def test_assemble_with_label() -> None:
     start_address = 0x80085760 + 0x9C
 
     patch = [

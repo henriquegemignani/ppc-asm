@@ -6,7 +6,7 @@ import typing as _typing
 from typing import final
 
 if _typing.TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Iterable, Iterator, Mapping
 
     from typing_extensions import Self
 
@@ -49,7 +49,7 @@ class BaseInstruction:
         self.name = name
         return self
 
-    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
+    def bytes_for(self, address: int, symbols: Mapping[str, int]) -> Iterator[int]:
         raise NotImplementedError
 
     def __eq__(self, other: object) -> bool:
@@ -71,7 +71,7 @@ class Instruction(BaseInstruction):
         super().__init__()
         self.value = value
 
-    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
+    def bytes_for(self, address: int, symbols: Mapping[str, int]) -> Iterator[int]:
         return iter(_pack(">I", self.value))
 
     def __eq__(self, other: object) -> bool:
@@ -114,7 +114,7 @@ class AddressDependantInstruction(BaseInstruction):
         super().__init__()
         self.factory = factory
 
-    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
+    def bytes_for(self, address: int, symbols: Mapping[str, int]) -> Iterator[int]:
         yield from Instruction.compose(self.factory(address)).bytes_for(address, symbols=symbols)
 
     def __eq__(self, other: object) -> bool:
@@ -139,14 +139,11 @@ class RelativeAddressInstruction(BaseInstruction):
         self.address_or_symbol = address_or_symbol
         self.factory = factory
 
-    def concrete_instruction(self, instruction_address: int, symbols: dict[str, int]) -> Instruction:
-        if isinstance(self.address_or_symbol, str):
-            address = symbols[self.address_or_symbol]
-        else:
-            address = self.address_or_symbol
+    def concrete_instruction(self, instruction_address: int, symbols: Mapping[str, int]) -> Instruction:
+        address = symbols[self.address_or_symbol] if isinstance(self.address_or_symbol, str) else self.address_or_symbol
         return Instruction.compose(self.factory(address, instruction_address))
 
-    def bytes_for(self, address: int, symbols: dict[str, int]) -> Iterator[int]:
+    def bytes_for(self, address: int, symbols: Mapping[str, int]) -> Iterator[int]:
         instruction = self.concrete_instruction(address, symbols=symbols)
         yield from instruction.bytes_for(address, symbols=symbols)
 
@@ -450,8 +447,7 @@ def _jump_to_relative_address(address_or_symbol: JumpTarget, *, relative: bool, 
     instruction = RelativeAddressInstruction(address_or_symbol, with_inc_address)
     if relative:
         return instruction.concrete_instruction(0, {})
-    else:
-        return instruction
+    return instruction
 
 
 def b(address_or_symbol: JumpTarget, *, relative: bool = False) -> BaseInstruction:
@@ -497,8 +493,7 @@ def _conditional_branch(
     instruction = RelativeAddressInstruction(address_or_symbol, with_inc_address)
     if relative:
         return instruction.concrete_instruction(0, {})
-    else:
-        return instruction
+    return instruction
 
 
 def bdnz(address_or_symbol: JumpTarget, relative: bool = False) -> BaseInstruction:
