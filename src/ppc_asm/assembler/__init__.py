@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import copy
 import typing
 
 from ppc_asm.assembler.ppc import BaseInstruction, Instruction
 
+if typing.TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
 __all__ = [
-    "Instruction",
     "BaseInstruction",
+    "Instruction",
     "assemble_instructions",
     "byte_count",
 ]
@@ -13,13 +18,10 @@ __all__ = [
 
 def assemble_instructions(
     address: int,
-    instructions: list[BaseInstruction],
-    symbols: typing.Optional[dict[str, int]] = None,
+    instructions: Sequence[BaseInstruction],
+    symbols: Mapping[str, int] | None = None,
 ) -> typing.Iterable[int]:
-    if symbols is not None:
-        symbols = copy.copy(symbols)
-    else:
-        symbols = {}
+    symbols = copy.copy(symbols) if symbols is not None else {}
 
     b = address
     for instruction in instructions:
