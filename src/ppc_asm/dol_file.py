@@ -69,6 +69,13 @@ class DolHeader:
             return section.offset + (address - section.base_address)
         return None
 
+    def address_for_offset(self, offset: int) -> int | None:
+        """Returns the address corresponding to the given offset, or None if the offset is not within any section."""
+        for section in self.sections:
+            if section.offset <= offset < section.offset + section.size:
+                return section.base_address + (offset - section.offset)
+        return None
+
 
 Symbol = Union[int, str, tuple[str, int]]
 
