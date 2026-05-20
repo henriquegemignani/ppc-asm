@@ -766,21 +766,21 @@ def mulli(output_register: GeneralRegister, input_register: GeneralRegister, lit
     )
 
 
-def fmuls(output_register: GeneralRegister, ra: GeneralRegister, rc: GeneralRegister) -> Instruction:
+def fmuls(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
     return Instruction.compose(
         (
             (59, 6, False),
             (output_register.number, 5, False),
             (ra.number, 5, False),
             (0, 5, False),
-            (rc.number, 5, False),
+            (rb.number, 5, False),
             (25, 5, False),
             (0, 1, False),
         )
     )
 
 
-def fdivs(output_register: GeneralRegister, ra: GeneralRegister, rb: GeneralRegister) -> Instruction:
+def fdivs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
     return Instruction.compose(
         (
             (59, 6, False),
