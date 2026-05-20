@@ -359,6 +359,20 @@ def ori(output_register: GeneralRegister, input_register: GeneralRegister, const
     )
 
 
+def xoris(output_register: GeneralRegister, input_register: GeneralRegister, constant: int) -> Instruction:
+    """
+    output_register = input_register ^ (constant << 16)
+    """
+    return Instruction.compose(
+        (
+            (27, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (constant, 16, False),
+        )
+    )
+
+
 def nop() -> Instruction:
     return ori(r0, r0, 0x0)
 

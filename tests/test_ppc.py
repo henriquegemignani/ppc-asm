@@ -49,6 +49,10 @@ def test_or() -> None:
     assert _b(ppc.or_(ppc.r31, ppc.r3, ppc.r3)) == [124, 127, 27, 120]
 
 
+def test_xoris() -> None:
+    assert _b(ppc.xoris(ppc.r3, ppc.r4, 0x1234)) == [0x6C, 0x64, 0x12, 0x34]
+
+
 def test_lmw() -> None:
     assert _b(ppc.lmw(ppc.r25, 0x774, ppc.r25)) == [187, 57, 7, 116]
 
