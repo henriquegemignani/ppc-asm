@@ -783,6 +783,9 @@ def mulli(output_register: GeneralRegister, input_register: GeneralRegister, lit
 
 
 def fmuls(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    """
+    output_register = (float)(ra * rb)
+    """
     return Instruction.compose(
         (
             (59, 6, False),
@@ -797,6 +800,9 @@ def fmuls(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) 
 
 
 def fdivs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    """
+    output_register = (float)(ra / rb)
+    """
     return Instruction.compose(
         (
             (59, 6, False),
@@ -811,6 +817,9 @@ def fdivs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) 
 
 
 def fsubs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    """
+    output_register = (float)(ra - rb)
+    """
     return Instruction.compose(
         (
             (59, 6, False),
@@ -825,6 +834,9 @@ def fsubs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) 
 
 
 def fadds(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    """
+    output_register = (float)(ra + rb)
+    """
     return Instruction.compose(
         (
             (59, 6, False),
