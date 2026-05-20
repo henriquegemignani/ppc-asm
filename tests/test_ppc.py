@@ -49,6 +49,10 @@ def test_fsubs() -> None:
     assert _b(ppc.fsubs(ppc.f1, ppc.f2, ppc.f3)) == [0xEC, 0x22, 0x18, 0x28]
 
 
+def test_fadds() -> None:
+    assert _b(ppc.fadds(ppc.f1, ppc.f2, ppc.f3)) == [0xEC, 0x22, 0x18, 0x2A]
+
+
 def test_addi() -> None:
     assert _b(ppc.addi(ppc.r3, ppc.r1, 0x8)) == [0x38, 0x61, 0x00, 0x08]
 

@@ -822,3 +822,17 @@ def fsubs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) 
             (0, 1, False),
         )
     )
+
+
+def fadds(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    return Instruction.compose(
+        (
+            (59, 6, False),
+            (output_register.number, 5, False),
+            (ra.number, 5, False),
+            (rb.number, 5, False),
+            (0, 5, False),
+            (21, 5, False),
+            (0, 1, False),
+        )
+    )
