@@ -407,6 +407,22 @@ def lfs(output_register: FloatRegister, offset: int, input_register: GeneralRegi
     )
 
 
+def lfd(output_register: FloatRegister, offset: int, input_register: GeneralRegister) -> Instruction:
+    """
+    output_register = (double) *(input_register + offset)
+
+    output_register is a float register.
+    """
+    return Instruction.compose(
+        (
+            (50, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (offset, 16, True),
+        )
+    )
+
+
 def cmpwi(input_register: GeneralRegister, literal: int) -> Instruction:
     return Instruction.compose(
         (
@@ -789,6 +805,20 @@ def fdivs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) 
             (rb.number, 5, False),
             (0, 5, False),
             (18, 5, False),
+            (0, 1, False),
+        )
+    )
+
+
+def fsubs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    return Instruction.compose(
+        (
+            (59, 6, False),
+            (output_register.number, 5, False),
+            (ra.number, 5, False),
+            (rb.number, 5, False),
+            (0, 5, False),
+            (20, 5, False),
             (0, 1, False),
         )
     )

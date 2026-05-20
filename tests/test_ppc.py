@@ -41,6 +41,14 @@ def test_lfs() -> None:
     ]
 
 
+def test_lfd() -> None:
+    assert _b(ppc.lfd(ppc.f0, -0x59B0, ppc.r2)) == [0xC8, 0x02, 0xA6, 0x50]
+
+
+def test_fsubs() -> None:
+    assert _b(ppc.fsubs(ppc.f1, ppc.f2, ppc.f3)) == [0xEC, 0x22, 0x18, 0x28]
+
+
 def test_addi() -> None:
     assert _b(ppc.addi(ppc.r3, ppc.r1, 0x8)) == [0x38, 0x61, 0x00, 0x08]
 
