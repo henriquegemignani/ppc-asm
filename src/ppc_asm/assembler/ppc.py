@@ -359,6 +359,20 @@ def ori(output_register: GeneralRegister, input_register: GeneralRegister, const
     )
 
 
+def xoris(output_register: GeneralRegister, input_register: GeneralRegister, constant: int) -> Instruction:
+    """
+    output_register = input_register ^ (constant << 16)
+    """
+    return Instruction.compose(
+        (
+            (27, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (constant, 16, False),
+        )
+    )
+
+
 def nop() -> Instruction:
     return ori(r0, r0, 0x0)
 
@@ -386,6 +400,22 @@ def lfs(output_register: FloatRegister, offset: int, input_register: GeneralRegi
     return Instruction.compose(
         (
             (48, 6, False),
+            (output_register.number, 5, False),
+            (input_register.number, 5, False),
+            (offset, 16, True),
+        )
+    )
+
+
+def lfd(output_register: FloatRegister, offset: int, input_register: GeneralRegister) -> Instruction:
+    """
+    output_register = (double) *(input_register + offset)
+
+    output_register is a float register.
+    """
+    return Instruction.compose(
+        (
+            (50, 6, False),
             (output_register.number, 5, False),
             (input_register.number, 5, False),
             (offset, 16, True),
@@ -752,21 +782,27 @@ def mulli(output_register: GeneralRegister, input_register: GeneralRegister, lit
     )
 
 
-def fmuls(output_register: GeneralRegister, ra: GeneralRegister, rc: GeneralRegister) -> Instruction:
+def fmuls(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    """
+    output_register = (float)(ra * rb)
+    """
     return Instruction.compose(
         (
             (59, 6, False),
             (output_register.number, 5, False),
             (ra.number, 5, False),
             (0, 5, False),
-            (rc.number, 5, False),
+            (rb.number, 5, False),
             (25, 5, False),
             (0, 1, False),
         )
     )
 
 
-def fdivs(output_register: GeneralRegister, ra: GeneralRegister, rb: GeneralRegister) -> Instruction:
+def fdivs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    """
+    output_register = (float)(ra / rb)
+    """
     return Instruction.compose(
         (
             (59, 6, False),
@@ -775,6 +811,40 @@ def fdivs(output_register: GeneralRegister, ra: GeneralRegister, rb: GeneralRegi
             (rb.number, 5, False),
             (0, 5, False),
             (18, 5, False),
+            (0, 1, False),
+        )
+    )
+
+
+def fsubs(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    """
+    output_register = (float)(ra - rb)
+    """
+    return Instruction.compose(
+        (
+            (59, 6, False),
+            (output_register.number, 5, False),
+            (ra.number, 5, False),
+            (rb.number, 5, False),
+            (0, 5, False),
+            (20, 5, False),
+            (0, 1, False),
+        )
+    )
+
+
+def fadds(output_register: FloatRegister, ra: FloatRegister, rb: FloatRegister) -> Instruction:
+    """
+    output_register = (float)(ra + rb)
+    """
+    return Instruction.compose(
+        (
+            (59, 6, False),
+            (output_register.number, 5, False),
+            (ra.number, 5, False),
+            (rb.number, 5, False),
+            (0, 5, False),
+            (21, 5, False),
             (0, 1, False),
         )
     )
