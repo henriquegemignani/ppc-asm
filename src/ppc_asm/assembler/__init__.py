@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import typing
 
 from ppc_asm.assembler.ppc import BaseInstruction, Instruction
@@ -21,16 +20,16 @@ def assemble_instructions(
     instructions: Sequence[BaseInstruction],
     symbols: Mapping[str, int] | None = None,
 ) -> typing.Iterable[int]:
-    symbols = copy.copy(symbols) if symbols is not None else {}
+    symbols_copy = dict(symbols) if symbols is not None else {}
 
     b = address
     for instruction in instructions:
         if instruction.label is not None:
-            symbols[instruction.label] = b
+            symbols_copy[instruction.label] = b
         b += instruction.byte_count
 
     for i, instruction in enumerate(instructions):
-        data = list(instruction.bytes_for(address, symbols=symbols))
+        data = list(instruction.bytes_for(address, symbols=symbols_copy))
         yield from data
         address += len(data)
 
