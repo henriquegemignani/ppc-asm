@@ -85,6 +85,10 @@ def test_lbz() -> None:
     assert _b(ppc.lbz(ppc.r4, 0x2, ppc.r3)) == [0x88, 0x83, 0x00, 0x02]
 
 
+def test_lbzx() -> None:
+    assert _b(ppc.lbzx(ppc.r0, ppc.r4, ppc.r0)) == [0x7C, 0x04, 0x00, 0xAE]
+
+
 def test_rlwinm() -> None:
     assert _b(ppc.rlwinm(ppc.r0, ppc.r0, 0x2, 0x0, 0x1D)) == [0x54, 0x00, 0x10, 0x3A]
 

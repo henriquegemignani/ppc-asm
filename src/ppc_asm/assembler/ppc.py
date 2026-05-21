@@ -300,6 +300,26 @@ def lbz(output_register: GeneralRegister, offset: int, input_register: GeneralRe
     )
 
 
+def lbzx(
+    output_register: GeneralRegister,
+    input_register_a: GeneralRegister,
+    input_register_b: GeneralRegister,
+) -> Instruction:
+    """
+    output_register = *(input_register_a + input_register_b)  (byte, zero-extended)
+    """
+    return Instruction.compose(
+        (
+            (31, 6, False),
+            (output_register.number, 5, False),
+            (input_register_a.number, 5, False),
+            (input_register_b.number, 5, False),
+            (87, 10, False),
+            (0, 1, False),
+        )
+    )
+
+
 def rlwinm(
     output_register: GeneralRegister,
     input_register: GeneralRegister,
