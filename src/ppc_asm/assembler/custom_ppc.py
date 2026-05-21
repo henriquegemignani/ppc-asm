@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import typing as _typing
 
+from ppc_asm import dol_file as _dol_file
 from ppc_asm.assembler import ppc
 
 if _typing.TYPE_CHECKING:
@@ -52,6 +53,32 @@ class CurrentAddressInstruction(ppc.BaseInstruction):
         return 8
 
 
+class LoadAddressInstruction(ppc.BaseInstruction):
+    def __init__(self, output_register: ppc.GeneralRegister, symbol: _dol_file.Symbol):
+        super().__init__()
+        self.output_register = output_register
+        self.symbol = symbol
+
+    # @_typing.override
+    def bytes_for(self, address: int, symbols: Mapping[str, int]) -> Iterator[int]:
+        return load_unsigned_32bit(self.output_register, _dol_file.resolve_symbol(self.symbol, symbols)).bytes_for(
+            address, symbols=symbols
+        )
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, LoadAddressInstruction) and (
+            other.output_register,
+            other.symbol,
+        ) == (self.output_register, self.symbol)
+
+    def __hash__(self) -> int:
+        return hash((self.output_register, self.symbol))
+
+    @property
+    def byte_count(self) -> int:
+        return 8
+
+
 def load_unsigned_32bit(output_register: ppc.GeneralRegister, value: int) -> CompositeInstruction:
     return CompositeInstruction(
         (
@@ -63,3 +90,11 @@ def load_unsigned_32bit(output_register: ppc.GeneralRegister, value: int) -> Com
 
 def load_current_address(output_register: ppc.GeneralRegister, instruction_offset: int = 0) -> ppc.BaseInstruction:
     return CurrentAddressInstruction(output_register, instruction_offset * 4)
+
+
+def load_address(output_register: ppc.GeneralRegister, symbol: _dol_file.Symbol) -> ppc.BaseInstruction:
+    """
+    Load the address of a symbol into a register.
+    The symbol must be defined in the symbols mapping passed to assemble_instructions.
+    """
+    return LoadAddressInstruction(output_register, symbol)

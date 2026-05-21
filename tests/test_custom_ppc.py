@@ -78,3 +78,18 @@ def test_assemble_with_label() -> None:
         0x00,
         0x00,
     ]
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (0x00000000, b"\x3c\x20\x00\x00\x60\x21\x00\x00"),
+        (0xFFFFFFFF, b"\x3c\x20\xff\xff\x60\x21\xff\xff"),
+        ("the_symbol", b"\x3c\x20\x00\x00\x60\x21\x00\x00"),
+        (("the_symbol", 0xFFFFFFFF), b"\x3c\x20\xff\xff\x60\x21\xff\xff"),
+    ],
+)
+def test_load_address_valid(value, expected) -> None:
+    symbols = {"the_symbol": 0x00000000}
+    codes = list(custom_ppc.load_address(ppc.r1, value).bytes_for(0, symbols=symbols))
+    assert bytes(codes) == expected

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, BinaryIO, TypeAlias
 from ppc_asm import assembler
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
+    from collections.abc import Iterable, Mapping, Sequence
     from pathlib import Path
     from types import TracebackType
 
@@ -80,7 +80,7 @@ class DolHeader:
 Symbol: TypeAlias = int | str | tuple[str, int]
 
 
-def resolve_symbol(address_or_symbol: Symbol, symbols: dict[str, int]) -> int:
+def resolve_symbol(address_or_symbol: Symbol, symbols: Mapping[str, int]) -> int:
     """
     Resolves the given symbol to an address using the provided symbol mapping. The symbol can be:
     - An integer, which is returned as-is.
