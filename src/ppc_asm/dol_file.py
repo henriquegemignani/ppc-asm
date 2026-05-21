@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import struct
-from typing import TYPE_CHECKING, BinaryIO, Union
+from typing import TYPE_CHECKING, BinaryIO, TypeAlias
 
 from ppc_asm import assembler
 
@@ -77,7 +77,7 @@ class DolHeader:
         return None
 
 
-Symbol = Union[int, str, tuple[str, int]]
+Symbol: TypeAlias = int | str | tuple[str, int]
 
 
 class DolEditor:
