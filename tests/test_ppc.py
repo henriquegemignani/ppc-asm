@@ -85,6 +85,10 @@ def test_lbz() -> None:
     assert _b(ppc.lbz(ppc.r4, 0x2, ppc.r3)) == [0x88, 0x83, 0x00, 0x02]
 
 
+def test_lbzx() -> None:
+    assert _b(ppc.lbzx(ppc.r0, ppc.r4, ppc.r0)) == [0x7C, 0x04, 0x00, 0xAE]
+
+
 def test_rlwinm() -> None:
     assert _b(ppc.rlwinm(ppc.r0, ppc.r0, 0x2, 0x0, 0x1D)) == [0x54, 0x00, 0x10, 0x3A]
 
@@ -95,6 +99,11 @@ def test_cmpwi_a() -> None:
 
 def test_cmpwi_b() -> None:
     assert _b(ppc.cmpwi(ppc.r4, -1)) == [0x2C, 0x04, 0xFF, 0xFF]
+
+
+def test_cmplwi() -> None:
+    assert _b(ppc.cmplwi(ppc.r30, 0)) == [0x28, 0x1E, 0x00, 0x00]
+    assert _b(ppc.cmplwi(ppc.r4, 0xFF)) == [0x28, 0x04, 0x00, 0xFF]
 
 
 def test_cmpw() -> None:
