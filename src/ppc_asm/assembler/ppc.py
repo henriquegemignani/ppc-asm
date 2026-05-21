@@ -15,8 +15,8 @@ def _pack(fmt: str, *args: int) -> Iterable[int]:
     return _struct.pack(fmt, *args)
 
 
-JumpTarget = _typing.Union[str, int]
-InstructionComponents = tuple[tuple[int, int, bool], ...]
+JumpTarget: _typing.TypeAlias = str | int
+InstructionComponents: _typing.TypeAlias = tuple[tuple[int, int, bool], ...]
 
 
 @_dataclasses.dataclass(frozen=True)
