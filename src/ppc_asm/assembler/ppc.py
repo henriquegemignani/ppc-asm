@@ -424,6 +424,10 @@ def lfd(output_register: FloatRegister, offset: int, input_register: GeneralRegi
 
 
 def cmpwi(input_register: GeneralRegister, literal: int) -> Instruction:
+    """
+    Signed compare of input_register against literal, setting cr0.
+    Use with beq/bne/blt/bgt to branch on the result.
+    """
     return Instruction.compose(
         (
             (11, 6, False),
@@ -436,14 +440,28 @@ def cmpwi(input_register: GeneralRegister, literal: int) -> Instruction:
     )
 
 
+def cmplwi(input_register: GeneralRegister, literal: int) -> Instruction:
+    """
+    Unsigned compare of input_register against literal, setting cr0.
+    Use with beq/bne/blt/bgt to branch on the result.
+    """
+    return Instruction.compose(
+        (
+            (10, 6, False),
+            (0, 3, False),
+            (0, 1, False),
+            (0, 1, False),
+            (input_register.number, 5, False),
+            (literal, 16, False),
+        )
+    )
+
+
 def cmp(bf: int, unused: int, ra: GeneralRegister, rb: GeneralRegister) -> Instruction:
     """
+    Signed compare of ra against rb, setting condition register field bf (0-7).
+    Use with beq/bne/blt/bgt to branch on the result.
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_cmp_instr.html
-    :param bf: Specifies Condition Register Field 0-7 which indicates result of compare.
-    :param unused: Must be set to 0 for the 32-bit subset architecture.
-    :param ra: Specifies source general-purpose register for operation.
-    :param rb: Specifies source general-purpose register for operation.
-    :return:
     """
     return Instruction.compose(
         (
@@ -460,7 +478,11 @@ def cmp(bf: int, unused: int, ra: GeneralRegister, rb: GeneralRegister) -> Instr
 
 
 def cmpw(bf: int, ra: GeneralRegister, rb: GeneralRegister) -> Instruction:
-    """https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_em_fpcinst.html"""
+    """
+    Signed compare of ra against rb, setting condition register field bf (0-7). Simplified form of cmp with L=0.
+    Use with beq/bne/blt/bgt to branch on the result.
+    https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_em_fpcinst.html
+    """
     return cmp(bf, 0, ra, rb)
 
 

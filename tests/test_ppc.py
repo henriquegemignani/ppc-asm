@@ -97,6 +97,11 @@ def test_cmpwi_b() -> None:
     assert _b(ppc.cmpwi(ppc.r4, -1)) == [0x2C, 0x04, 0xFF, 0xFF]
 
 
+def test_cmplwi() -> None:
+    assert _b(ppc.cmplwi(ppc.r30, 0)) == [0x28, 0x1E, 0x00, 0x00]
+    assert _b(ppc.cmplwi(ppc.r4, 0xFF)) == [0x28, 0x04, 0x00, 0xFF]
+
+
 def test_cmpw() -> None:
     assert _b(ppc.cmpwi(ppc.r4, -1)) == [0x2C, 0x04, 0xFF, 0xFF]
 
