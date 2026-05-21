@@ -80,6 +80,22 @@ class DolHeader:
 Symbol: TypeAlias = int | str | tuple[str, int]
 
 
+def resolve_symbol(address_or_symbol: Symbol, symbols: dict[str, int]) -> int:
+    """
+    Resolves the given symbol to an address using the provided symbol mapping. The symbol can be:
+    - An integer, which is returned as-is.
+    - A string, which is looked up in the symbol mapping.
+    - A tuple of a string and an integer, where the string is looked up in
+      the symbol mapping and the integer is added as an offset.
+    """
+    if isinstance(address_or_symbol, tuple):
+        symbol, offset = address_or_symbol
+        return symbols[symbol] + offset
+    if isinstance(address_or_symbol, str):
+        return symbols[address_or_symbol]
+    return address_or_symbol
+
+
 class DolEditor:
     header: DolHeader
     symbols: dict[str, int]
@@ -89,12 +105,11 @@ class DolEditor:
         self.symbols = {}
 
     def resolve_symbol(self, address_or_symbol: Symbol) -> int:
-        if isinstance(address_or_symbol, tuple):
-            symbol, offset = address_or_symbol
-            return self.symbols[symbol] + offset
-        if isinstance(address_or_symbol, str):
-            return self.symbols[address_or_symbol]
-        return address_or_symbol
+        """
+        Resolves the given symbol to an address using the symbol mapping of this DolEditor.
+        @see resolve_symbol in the module scope for details on how symbols are resolved.
+        """
+        return resolve_symbol(address_or_symbol, self.symbols)
 
     def offset_for_address(self, address: int) -> int:
         offset = self.header.offset_for_address(address)
