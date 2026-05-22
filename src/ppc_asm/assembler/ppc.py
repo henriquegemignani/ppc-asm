@@ -24,11 +24,21 @@ class Register:
     number: int
 
 
+@_dataclasses.dataclass(frozen=True)
 class GeneralRegister(Register):
     def __repr__(self) -> str:
         return f"r{self.number}"
 
 
+@_dataclasses.dataclass(frozen=True)
+class SpecialRegister(GeneralRegister):
+    name: str
+
+    def __repr__(self) -> str:
+        return self.name
+
+
+@_dataclasses.dataclass(frozen=True)
 class FloatRegister(Register):
     def __repr__(self) -> str:
         return f"f{self.number}"
@@ -222,8 +232,14 @@ f30 = FloatRegister(30)
 f31 = FloatRegister(31)
 
 # Special Registers
-LR = 8
-CTR = 9
+SP = SpecialRegister(1, "SP")
+"""Stack pointer"""
+
+LR = SpecialRegister(8, "SP")
+"""Link register"""
+
+CTR = SpecialRegister(9, "CTR")
+"""Count register"""
 
 
 def lmw(start_register: GeneralRegister, offset: int, input_register: GeneralRegister) -> Instruction:
@@ -363,6 +379,17 @@ def or_(
             (int(record_bit), 1, False),
         )
     )
+
+
+def mr(
+    output_register: GeneralRegister,
+    input_register: GeneralRegister,
+) -> Instruction:
+    """
+    output_register = input_register
+    """
+    # see https://fenixfox-studios.com/manual/powerpc/instructions/mr.html
+    return or_(output_register, input_register, input_register)
 
 
 def ori(output_register: GeneralRegister, input_register: GeneralRegister, constant: int) -> Instruction:
