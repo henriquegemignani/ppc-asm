@@ -24,11 +24,22 @@ class Register:
     number: int
 
 
+@_dataclasses.dataclass(frozen=True)
 class GeneralRegister(Register):
     def __repr__(self) -> str:
         return f"r{self.number}"
 
 
+# FIXME: some opcodes might not be able to use these?
+@_dataclasses.dataclass(frozen=True)
+class SpecialRegister(GeneralRegister):
+    name: str
+
+    def __repr__(self) -> str:
+        return self.name
+
+
+@_dataclasses.dataclass(frozen=True)
 class FloatRegister(Register):
     def __repr__(self) -> str:
         return f"f{self.number}"
@@ -222,8 +233,14 @@ f30 = FloatRegister(30)
 f31 = FloatRegister(31)
 
 # Special Registers
-LR = 8
-CTR = 9
+SP = SpecialRegister(1, "SP")
+"""Stack pointer"""
+
+LR = SpecialRegister(8, "SP")
+"""Link register"""
+
+CTR = SpecialRegister(9, "CTR")
+"""Count register"""
 
 
 def lmw(start_register: GeneralRegister, offset: int, input_register: GeneralRegister) -> Instruction:
@@ -363,6 +380,17 @@ def or_(
             (int(record_bit), 1, False),
         )
     )
+
+
+def mr(
+    output_register: GeneralRegister,
+    input_register: GeneralRegister,
+) -> Instruction:
+    """
+    output_register = input_register
+    """
+    # see https://fenixfox-studios.com/manual/powerpc/instructions/mr.html
+    return or_(output_register, input_register, input_register)
 
 
 def ori(output_register: GeneralRegister, input_register: GeneralRegister, constant: int) -> Instruction:
@@ -780,10 +808,10 @@ def addis(output_register: GeneralRegister, input_register: GeneralRegister, lit
 
 
 def _special_register_op(
-    input_register: Register, special_register: int, magic_value: int, op_code: int
+    input_register: Register, special_register: SpecialRegister, magic_value: int, op_code: int
 ) -> Instruction:
-    special_register_top = special_register >> 5
-    special_register_bot = special_register & 0b11111
+    special_register_top = special_register.number >> 5
+    special_register_bot = special_register.number & 0b11111
 
     return Instruction.compose(
         (
@@ -797,7 +825,7 @@ def _special_register_op(
     )
 
 
-def mtspr(special_register: int, input_register: GeneralRegister) -> Instruction:
+def mtspr(special_register: SpecialRegister, input_register: GeneralRegister) -> Instruction:
     return _special_register_op(input_register, special_register, 467, 31)
 
 
@@ -805,7 +833,7 @@ def mtctr(rs: GeneralRegister) -> Instruction:
     return mtspr(CTR, rs)
 
 
-def mfspr(output_register: GeneralRegister, special_register: int) -> Instruction:
+def mfspr(output_register: GeneralRegister, special_register: SpecialRegister) -> Instruction:
     """
     Move from Special-Purpose Register
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_mfspr_spr_instrs.html
