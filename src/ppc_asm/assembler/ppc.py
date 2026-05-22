@@ -30,6 +30,7 @@ class GeneralRegister(Register):
         return f"r{self.number}"
 
 
+# FIXME: some opcodes might not be able to use these?
 @_dataclasses.dataclass(frozen=True)
 class SpecialRegister(GeneralRegister):
     name: str
@@ -807,10 +808,10 @@ def addis(output_register: GeneralRegister, input_register: GeneralRegister, lit
 
 
 def _special_register_op(
-    input_register: Register, special_register: int, magic_value: int, op_code: int
+    input_register: Register, special_register: SpecialRegister, magic_value: int, op_code: int
 ) -> Instruction:
-    special_register_top = special_register >> 5
-    special_register_bot = special_register & 0b11111
+    special_register_top = special_register.number >> 5
+    special_register_bot = special_register.number & 0b11111
 
     return Instruction.compose(
         (
@@ -824,7 +825,7 @@ def _special_register_op(
     )
 
 
-def mtspr(special_register: int, input_register: GeneralRegister) -> Instruction:
+def mtspr(special_register: SpecialRegister, input_register: GeneralRegister) -> Instruction:
     return _special_register_op(input_register, special_register, 467, 31)
 
 
@@ -832,7 +833,7 @@ def mtctr(rs: GeneralRegister) -> Instruction:
     return mtspr(CTR, rs)
 
 
-def mfspr(output_register: GeneralRegister, special_register: int) -> Instruction:
+def mfspr(output_register: GeneralRegister, special_register: SpecialRegister) -> Instruction:
     """
     Move from Special-Purpose Register
     https://www.ibm.com/support/knowledgecenter/ssw_aix_72/assembler/idalangref_mfspr_spr_instrs.html
