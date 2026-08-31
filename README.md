@@ -6,7 +6,6 @@ This package provides allows one to easily modify existing Nintendo GameCube or 
 ## Usage
 
 ```python
-
 import pathlib
 from ppc_asm.dol_file import DolFile
 from ppc_asm.assembler.ppc import *
@@ -21,7 +20,6 @@ with dol_file:
             li(r4, 0x29),
             li(r5, 9999),
             bl(0x80085760),
-        ]
+        ],
     )
-
 ```
